@@ -4,22 +4,19 @@
 <meta charset="UTF-8">
 <title>Student Profile Creator</title>
 <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
     h1 { text-align: center; }
-    form, .controls, .view-section { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-    label { display: block; margin-top: 10px; }
-    input, select, button { padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-    button { cursor: pointer; background: #4CAF50; color: white; border: none; }
-    button.ghost { background: #888; }
-    table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
-    th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-    th { background: #f0f0f0; }
-    .action-btn { background: #e74c3c; padding: 5px 8px; border: none; border-radius: 4px; color: white; cursor: pointer; }
+    form { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    label { display: block; margin-top: 8px; }
+    input, select { width: 100%; padding: 6px; margin-top: 4px; }
+    button { padding: 6px 12px; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
     .hidden { display: none; }
+    .actions { margin-top: 20px; }
     @media print {
-        form, .controls, .view-options { display: none !important; }
-        table { border: 1px solid #000; }
-        th, td { border: 1px solid #000; }
+        form, .actions { display: none; }
     }
 </style>
 </head>
@@ -29,162 +26,143 @@
 
 <!-- Add Student Form -->
 <form id="addStudentForm">
-    <h3>Add New Student</h3>
+    <h3>Add Student</h3>
     <label>Name: <input type="text" id="name" required></label>
-    <label>Year: <input type="number" id="year" min="1" max="5" required></label>
-    <label>Semester: <input type="number" id="semester" min="1" max="10" required></label>
+    <label>Year: <input type="number" id="year" required></label>
+    <label>Semester: <input type="number" id="semester" required></label>
     <label>Branch: <input type="text" id="branch" required></label>
     <label>Email: <input type="email" id="email" required></label>
     <label>Phone: <input type="text" id="phone" required></label>
-    <label>Age: <input type="number" id="age" required></label>
-    <label>Address: <input type="text" id="address" required></label>
     <button type="submit">Add Student</button>
 </form>
 
-<!-- View Options -->
-<div class="view-options">
-    <button id="viewAllBtn" type="button">View All Students</button>
-    <button id="viewBranchSemBtn" type="button">View Branch & Semester Wise</button>
-    <button id="viewYearBtn" type="button">View Year Wise</button>
+<!-- Action Buttons -->
+<div class="actions">
+    <button id="viewAllBtn">View All Students</button>
+    <button id="viewBranchSemBtn">View Branch & Semester Wise</button>
+    <button id="printBtn">Print</button>
 </div>
 
-<!-- Branch & Semester Filter -->
-<div id="branchSemFilter" class="controls hidden">
+<!-- Filters -->
+<div id="filters" class="hidden">
     <label>Branch:
-        <select id="branchSelect"><option value="">Select Branch</option></select>
+        <select id="branchSelect"></select>
     </label>
     <label>Semester:
-        <select id="semSelect"><option value="">Select Semester</option></select>
+        <select id="semSelect"></select>
     </label>
-    <button id="applyBranchSemFilter" type="button">Apply Filter</button>
+    <button id="applyFilterBtn">Apply Filter</button>
 </div>
 
-<!-- Year Filter -->
-<div id="yearFilter" class="controls hidden">
-    <label>Year:
-        <select id="yearSelect"><option value="">Select Year</option></select>
-    </label>
-    <button id="applyYearFilter" type="button">Apply Filter</button>
-</div>
-
-<!-- Student Table Section -->
-<div id="tableSection" class="view-section hidden">
-    <button id="printBtn" class="ghost" type="button">🖨 Print</button>
-    <table id="studentTable">
+<!-- Students Table -->
+<div id="tableSection" class="hidden">
+    <table>
         <thead>
             <tr>
-                <th>Name</th><th>Year</th><th>Semester</th><th>Branch</th>
-                <th>Email</th><th>Phone</th><th>Actions</th>
+                <th>Name</th>
+                <th>Year</th>
+                <th>Semester</th>
+                <th>Branch</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Delete</th>
             </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="tableBody"></tbody>
     </table>
 </div>
 
 <script>
-    const students = [];
-    const tableBody = document.querySelector("#studentTable tbody");
+let students = [];
 
-    function updateDropdowns() {
-        const branches = [...new Set(students.map(s => s.branch))].sort();
-        const semesters = [...new Set(students.map(s => s.semester))].sort();
-        const years = [...new Set(students.map(s => s.year))].sort();
+const form = document.getElementById("addStudentForm");
+const tableSection = document.getElementById("tableSection");
+const tableBody = document.getElementById("tableBody");
+const filters = document.getElementById("filters");
+const branchSelect = document.getElementById("branchSelect");
+const semSelect = document.getElementById("semSelect");
 
-        document.getElementById("branchSelect").innerHTML =
-            '<option value="">Select Branch</option>' + branches.map(b => `<option>${b}</option>`).join("");
-        document.getElementById("semSelect").innerHTML =
-            '<option value="">Select Semester</option>' + semesters.map(s => `<option>${s}</option>`).join("");
-        document.getElementById("yearSelect").innerHTML =
-            '<option value="">Select Year</option>' + years.map(y => `<option>${y}</option>`).join("");
-    }
+// Add Student
+form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const newStudent = {
+        name: document.getElementById("name").value.trim(),
+        year: document.getElementById("year").value.trim(),
+        semester: document.getElementById("semester").value.trim(),
+        branch: document.getElementById("branch").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone: document.getElementById("phone").value.trim()
+    };
+    students.push(newStudent);
+    form.reset();
+    alert("Student added successfully!");
+    updateDropdowns();
+});
 
-    function renderTable(data) {
-        tableBody.innerHTML = data.map((s, index) => `
-            <tr>
-                <td>${s.name}</td>
-                <td>${s.year}</td>
-                <td>${s.semester}</td>
-                <td>${s.branch}</td>
-                <td>${s.email}</td>
-                <td>${s.phone}</td>
-                <td><button class="action-btn" onclick="deleteStudent(${index})">Delete</button></td>
-            </tr>
-        `).join("");
-    }
+// View All Students
+document.getElementById("viewAllBtn").addEventListener("click", () => {
+    filters.classList.add("hidden");
+    renderTable(students);
+    tableSection.classList.remove("hidden");
+});
 
-    function deleteStudent(index) {
-        if (confirm("Are you sure you want to delete this student?")) {
-            students.splice(index, 1);
-            document.getElementById("tableSection").classList.add("hidden");
-            updateDropdowns();
-        }
-    }
+// View Branch & Semester Wise
+document.getElementById("viewBranchSemBtn").addEventListener("click", () => {
+    filters.classList.remove("hidden");
+    tableSection.classList.add("hidden");
+    updateDropdowns();
+});
 
-    document.getElementById("addStudentForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const student = {
-            name: document.getElementById("name").value,
-            year: document.getElementById("year").value,
-            semester: document.getElementById("semester").value,
-            branch: document.getElementById("branch").value,
-            email: document.getElementById("email").value,
-            phone: document.getElementById("phone").value,
-            age: document.getElementById("age").value,
-            address: document.getElementById("address").value
-        };
-        students.push(student);
+// Apply Filter
+document.getElementById("applyFilterBtn").addEventListener("click", () => {
+    const branch = branchSelect.value;
+    const sem = semSelect.value;
+    const filtered = students.filter(s => 
+        (branch === "" || s.branch === branch) && 
+        (sem === "" || s.semester === sem)
+    );
+    renderTable(filtered);
+    tableSection.classList.remove("hidden");
+});
+
+// Print
+document.getElementById("printBtn").addEventListener("click", () => {
+    window.print();
+});
+
+// Update dropdowns
+function updateDropdowns() {
+    const branches = [...new Set(students.map(s => s.branch))];
+    const semesters = [...new Set(students.map(s => s.semester))];
+
+    branchSelect.innerHTML = '<option value="">All</option>' + branches.map(b => `<option value="${b}">${b}</option>`).join("");
+    semSelect.innerHTML = '<option value="">All</option>' + semesters.map(s => `<option value="${s}">${s}</option>`).join("");
+}
+
+// Render Table
+function renderTable(data) {
+    tableBody.innerHTML = data.map(s => `
+        <tr>
+            <td>${s.name}</td>
+            <td>${s.year}</td>
+            <td>${s.semester}</td>
+            <td>${s.branch}</td>
+            <td>${s.email}</td>
+            <td>${s.phone}</td>
+            <td><button onclick="deleteStudentByName('${s.name}')">❌</button></td>
+        </tr>
+    `).join("");
+}
+
+// Delete Student
+function deleteStudentByName(name) {
+    if (confirm("Are you sure you want to delete this student?")) {
+        students = students.filter(s => s.name !== name);
+        alert("Student deleted!");
+        tableSection.classList.add("hidden");
         updateDropdowns();
-        e.target.reset();
-        alert("Student added successfully!");
-    });
-
-    document.getElementById("viewAllBtn").addEventListener("click", () => {
-        if (students.length === 0) { alert("No students found!"); return; }
-        renderTable(students);
-        document.getElementById("tableSection").classList.remove("hidden");
-        document.getElementById("branchSemFilter").classList.add("hidden");
-        document.getElementById("yearFilter").classList.add("hidden");
-    });
-
-    document.getElementById("viewBranchSemBtn").addEventListener("click", () => {
-        if (students.length === 0) { alert("No students found!"); return; }
-        document.getElementById("branchSemFilter").classList.remove("hidden");
-        document.getElementById("yearFilter").classList.add("hidden");
-        document.getElementById("tableSection").classList.remove("hidden");
-        renderTable([]); // empty until filter applied
-    });
-
-    document.getElementById("viewYearBtn").addEventListener("click", () => {
-        if (students.length === 0) { alert("No students found!"); return; }
-        document.getElementById("yearFilter").classList.remove("hidden");
-        document.getElementById("branchSemFilter").classList.add("hidden");
-        document.getElementById("tableSection").classList.remove("hidden");
-        renderTable([]); // empty until filter applied
-    });
-
-    document.getElementById("applyBranchSemFilter").addEventListener("click", () => {
-        const branchVal = document.getElementById("branchSelect").value;
-        const semVal = document.getElementById("semSelect").value;
-        const filtered = students.filter(s =>
-            (branchVal === "" || s.branch === branchVal) &&
-            (semVal === "" || s.semester == semVal)
-        );
-        if (filtered.length === 0) { alert("No matching students found!"); }
-        renderTable(filtered);
-    });
-
-    document.getElementById("applyYearFilter").addEventListener("click", () => {
-        const yearVal = document.getElementById("yearSelect").value;
-        const filtered = students.filter(s =>
-            (yearVal === "" || s.year == yearVal)
-        );
-        if (filtered.length === 0) { alert("No matching students found!"); }
-        renderTable(filtered);
-    });
-
-    document.getElementById("printBtn").addEventListener("click", () => {
-        window.print();
-    });
+    }
+}
 </script>
 
 </body>
