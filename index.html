@@ -3,159 +3,124 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Profiles — Viewer</title>
+  <title>Student Profile Creator</title>
   <style>
-    :root{
-      --bg:#f7fafc; --card:#fff; --muted:#6b7280; --accent:#2563eb;
-      --border:#e6e9ef;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    :root {
+      --bg: #f7fafc; --card: #fff; --muted: #6b7280; --accent: #2563eb;
+      --border: #e6e9ef;
+      font-family: Arial, sans-serif;
     }
-    body{margin:0;background:var(--bg);color:#111;}
-    .container{max-width:1100px;margin:36px auto;padding:20px;}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-    h1{font-size:20px;margin:0;}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-    select,input[type="search"]{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;}
-    button{padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer;}
-    button.ghost{background:#fff;color:var(--accent);border:1px solid var(--border);}
-    .card{background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border);box-shadow:0 6px 18px rgba(16,24,40,0.04);}
-    table{width:100%;border-collapse:collapse;margin-top:14px;}
-    th,td{padding:10px 8px;text-align:left;border-bottom:1px solid #f1f3f6;font-size:14px;}
-    th{color:var(--muted);font-weight:600;}
-    tr:hover td{background:#fbfdff;}
-    .tag{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef2ff;color:#1e3a8a;font-weight:600;font-size:12px;}
-    .actions button{margin-right:6px;}
-    .small{font-size:13px;color:var(--muted);}
-    .footer{margin-top:10px;color:var(--muted);font-size:13px;}
-    /* Modal */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;padding:18px;}
-    .modal{width:640px;max-width:100%;background:#fff;border-radius:10px;padding:18px;border:1px solid var(--border);}
-    .modal h3{margin:0 0 6px 0;}
-    .modal .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-    .close-btn{background:#ef4444;color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;float:right;}
-    @media (max-width:640px){
-      .controls{flex-direction:column;align-items:stretch;}
-      .modal .grid{grid-template-columns:1fr;}
+    body { margin: 0; background: var(--bg); color: #111; }
+    .container { max-width: 1100px; margin: 36px auto; padding: 20px; }
+    h1 { font-size: 20px; margin: 0 0 10px; }
+    h2 { font-size: 18px; margin-top: 0; }
+    .card { background: var(--card); border-radius: 12px; padding: 14px; border: 1px solid var(--border); margin-bottom: 20px; }
+    .controls, form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"] {
+      padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff;
+    }
+    button { padding: 8px 12px; border-radius: 8px; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+    button.ghost { background: #fff; color: var(--accent); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #f1f3f6; font-size: 14px; }
+    th { color: var(--muted); font-weight: 600; }
+    tr:hover td { background: #fbfdff; }
+    .small { font-size: 13px; color: var(--muted); }
+    .footer { margin-top: 10px; color: var(--muted); font-size: 13px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.5); display: none; align-items: center; justify-content: center; padding: 18px; }
+    .modal { width: 640px; max-width: 100%; background: #fff; border-radius: 10px; padding: 18px; border: 1px solid var(--border); }
+    .modal h3 { margin: 0 0 6px 0; }
+    .modal .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .close-btn { background: #ef4444; color: #fff; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; float: right; }
+    @media (max-width: 640px) { .controls { flex-direction: column; align-items: stretch; } .modal .grid { grid-template-columns: 1fr; } }
+
+    /* Print view - hide form and filters */
+    @media print {
+      form, .controls, .footer, .modal-backdrop { display: none !important; }
+      table { border: 1px solid #000; }
+      th, td { border: 1px solid #000; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Student Profiles — Viewer</h1>
-      <div class="controls">
-        <label class="small">Search:
-          <input id="searchInput" type="search" placeholder="Name, email, phone..." />
-        </label>
-      </div>
-    </header>
+    <h1>Student Profile Creator</h1>
 
+    <!-- Add Student Form -->
     <section class="card">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <h2>Add New Student</h2>
+      <form id="addStudentForm">
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="number" id="year" placeholder="Year" min="1" max="4" required>
+        <input type="number" id="sem" placeholder="Semester" min="1" max="8" required>
+        <input type="text" id="branch" placeholder="Branch" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="tel" id="phone" placeholder="Phone" required>
+        <input type="number" id="age" placeholder="Age" min="15" max="30">
+        <input type="text" id="address" placeholder="Address">
+        <button type="submit">Add Student</button>
+      </form>
+    </section>
+
+    <!-- Filter + Table -->
+    <section class="card">
+      <div class="controls">
         <label class="small">Year:
-          <select id="yearSelect">
-            <option value="">All Years</option>
-          </select>
+          <select id="yearSelect"><option value="">All Years</option></select>
         </label>
-
         <label class="small">Semester:
-          <select id="semSelect">
-            <option value="">All Semesters</option>
-          </select>
+          <select id="semSelect"><option value="">All Semesters</option></select>
         </label>
-
         <label class="small">Branch:
-          <select id="branchSelect">
-            <option value="">All Branches</option>
-          </select>
+          <select id="branchSelect"><option value="">All Branches</option></select>
         </label>
-
+        <input id="searchInput" type="text" placeholder="Search...">
         <button id="filterBtn">Apply Filters</button>
-        <button id="resetBtn" class="ghost">Reset Filters</button>
-        <button id="viewAllBtn" class="ghost">View All Students</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+        <button id="viewAllBtn" class="ghost">View All</button>
+        <button id="printBtn" class="ghost">🖨 Print</button>
       </div>
 
-      <div id="resultsArea">
-        <table id="studentsTable" aria-live="polite">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Year</th>
-              <th>Semester</th>
-              <th>Branch</th>
-              <th>Email / Phone</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="studentsTbody">
-            <!-- rows injected here -->
-          </tbody>
-        </table>
-
-        <div class="footer small" id="countInfo"></div>
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Year</th><th>Sem</th><th>Branch</th><th>Email / Phone</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTbody"></tbody>
+      </table>
+      <div class="footer small" id="countInfo"></div>
     </section>
   </div>
 
   <!-- Modal -->
-  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal" id="detailModal">
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
       <button class="close-btn" id="modalClose">Close</button>
       <h3 id="modalName"></h3>
       <div class="small" id="modalMeta"></div>
-      <div class="grid" id="modalGrid">
-        <!-- details -->
-      </div>
-      <div style="margin-top:12px;">
-        <strong>Address</strong>
-        <p id="modalAddress" class="small"></p>
-      </div>
+      <div class="grid" id="modalGrid"></div>
+      <div style="margin-top:12px;"><strong>Address</strong><p id="modalAddress" class="small"></p></div>
     </div>
   </div>
 
   <script>
-    // ---- Sample data ----
     const students = [
-      {id:1, name:"Asha Rao", year:1, sem:1, branch:"CSE", email:"asha.rao@example.com", phone:"+91-9876543210", age:18, address:"12 MG Road, Bangalore"},
-      {id:2, name:"Rohan Kumar", year:2, sem:3, branch:"ECE", email:"rohan.k@example.com", phone:"+91-9123456780", age:19, address:"45 5th Cross, Mysore"},
-      {id:3, name:"Priya Sharma", year:3, sem:5, branch:"IT", email:"priya.s@example.com", phone:"+91-9988776655", age:20, address:"22 Flower St, Pune"},
-      {id:4, name:"Karthik S", year:2, sem:4, branch:"CSE", email:"karthik.s@example.com", phone:"+91-9234567890", age:19, address:"9 Lake View, Hubli"},
-      {id:5, name:"Nisha Patil", year:1, sem:2, branch:"Mechanical", email:"nisha.p@example.com", phone:"+91-9012345678", age:18, address:"101 Palm Ave, Kolhapur"},
-      {id:6, name:"Anil Gupta", year:4, sem:8, branch:"Civil", email:"anil.g@example.com", phone:"+91-9898989898", age:21, address:"7 River Road, Nagpur"},
-      // add more sample students here as needed
+      {id:1,name:"Asha Rao",year:1,sem:1,branch:"CSE",email:"asha@example.com",phone:"+91-9876543210",age:18,address:"Bangalore"},
+      {id:2,name:"Rohan Kumar",year:2,sem:3,branch:"ECE",email:"rohan@example.com",phone:"+91-9123456780",age:19,address:"Mysore"}
     ];
-
-    // ---- Utilities ----
     const $ = id => document.getElementById(id);
-    const uniqueSorted = (arr) => Array.from(new Set(arr)).sort((a,b)=>a-b);
+    const uniqueSorted = arr => Array.from(new Set(arr)).sort((a,b)=>a-b);
+    const escapeHtml = t => t ? t.replaceAll("&","&amp;").replaceAll("<","&lt;") : "";
 
-    // ---- populate filter dropdowns dynamically based on data ----
     function populateFilters(){
-      const years = uniqueSorted(students.map(s=>s.year));
-      const sems = uniqueSorted(students.map(s=>s.sem));
-      const branches = Array.from(new Set(students.map(s=>s.branch))).sort();
-
-      const yearSelect = $("yearSelect");
-      years.forEach(y => {
-        const opt = document.createElement("option");
-        opt.value = y; opt.textContent = `Year ${y}`;
-        yearSelect.appendChild(opt);
+      ["yearSelect","semSelect","branchSelect"].forEach(id=>{
+        const el = $(id);
+        while(el.options.length > 1) el.remove(1);
       });
-
-      const semSelect = $("semSelect");
-      sems.forEach(s => {
-        const opt = document.createElement("option");
-        opt.value = s; opt.textContent = `Sem ${s}`;
-        semSelect.appendChild(opt);
-      });
-
-      const branchSelect = $("branchSelect");
-      branches.forEach(b => {
-        const opt = document.createElement("option");
-        opt.value = b; opt.textContent = b;
-        branchSelect.appendChild(opt);
-      });
+      uniqueSorted(students.map(s=>s.year)).forEach(y=>$("yearSelect").append(new Option("Year "+y,y)));
+      uniqueSorted(students.map(s=>s.sem)).forEach(s=>$("semSelect").append(new Option("Sem "+s,s)));
+      Array.from(new Set(students.map(s=>s.branch))).sort().forEach(b=>$("branchSelect").append(new Option(b,b)));
     }
 
     function renderTable(list){
@@ -164,147 +129,75 @@
       if(!list.length){
         tbody.innerHTML = `<tr><td colspan="7" class="small">No students found.</td></tr>`;
       } else {
-        list.forEach((s, idx) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${idx+1}</td>
-            <td><strong>${escapeHtml(s.name)}</strong><div class="small">${s.age ? s.age + " yrs" : ""}</div></td>
-            <td>Year ${s.year}</td>
-            <td>Sem ${s.sem}</td>
-            <td>${s.branch}</td>
+        list.forEach((s,i)=>{
+          tbody.innerHTML += `<tr>
+            <td>${i+1}</td>
+            <td><strong>${escapeHtml(s.name)}</strong><div class="small">${s.age||""} yrs</div></td>
+            <td>${s.year}</td><td>${s.sem}</td><td>${escapeHtml(s.branch)}</td>
             <td class="small">${escapeHtml(s.email)}<br>${escapeHtml(s.phone)}</td>
-            <td class="actions">
-              <button data-id="${s.id}" class="viewBtn">View</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
+            <td><button class="viewBtn" data-id="${s.id}">View</button></td>
+          </tr>`;
         });
       }
-      $("countInfo").textContent = `Showing ${list.length} student(s).`;
-      attachViewHandlers();
+      $("countInfo").textContent = `Showing ${list.length} student(s)`;
+      document.querySelectorAll(".viewBtn").forEach(btn=>btn.onclick=()=>openDetailModal(+btn.dataset.id));
     }
 
-    function escapeHtml(text){
-      if(!text) return "";
-      return text.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-    }
-
-    function attachViewHandlers(){
-      document.querySelectorAll(".viewBtn").forEach(btn=>{
-        btn.onclick = () => {
-          const id = Number(btn.getAttribute("data-id"));
-          openDetailModal(id);
-        };
-      });
-    }
-
-    // ---- filtering logic ----
     function applyFilters(){
-      const yearVal = $("yearSelect").value;
-      const semVal = $("semSelect").value;
-      const branchVal = $("branchSelect").value;
-      const searchVal = $("searchInput").value.trim().toLowerCase();
-
-      let filtered = students.slice();
-
-      if(yearVal) filtered = filtered.filter(s => String(s.year) === String(yearVal));
-      if(semVal) filtered = filtered.filter(s => String(s.sem) === String(semVal));
-      if(branchVal) filtered = filtered.filter(s => s.branch === branchVal);
-      if(searchVal){
-        filtered = filtered.filter(s => {
-          return (s.name && s.name.toLowerCase().includes(searchVal))
-              || (s.email && s.email.toLowerCase().includes(searchVal))
-              || (s.phone && s.phone.toLowerCase().includes(searchVal))
-              || (s.branch && s.branch.toLowerCase().includes(searchVal));
-        });
-      }
-      renderTable(filtered);
+      let list = students.slice();
+      if($("yearSelect").value) list = list.filter(s=>s.year==$("yearSelect").value);
+      if($("semSelect").value) list = list.filter(s=>s.sem==$("semSelect").value);
+      if($("branchSelect").value) list = list.filter(s=>s.branch==$("branchSelect").value);
+      const q = $("searchInput").value.toLowerCase();
+      if(q) list = list.filter(s=>Object.values(s).some(v=>String(v).toLowerCase().includes(q)));
+      renderTable(list);
     }
 
-    // ---- modal logic ----
     function openDetailModal(id){
-      const s = students.find(x => x.id === id);
-      if(!s) return;
+      const s = students.find(st=>st.id===id);
       $("modalName").textContent = s.name;
       $("modalMeta").textContent = `ID: ${s.id} • ${s.branch} • Year ${s.year}, Sem ${s.sem}`;
-      const grid = $("modalGrid");
-      grid.innerHTML = `
-        <div><strong>Email</strong><div class="small">${escapeHtml(s.email)}</div></div>
-        <div><strong>Phone</strong><div class="small">${escapeHtml(s.phone)}</div></div>
-        <div><strong>Age</strong><div class="small">${s.age ?? "-"}</div></div>
-        <div><strong>Branch</strong><div class="small">${escapeHtml(s.branch)}</div></div>
-      `;
+      $("modalGrid").innerHTML = `<div><strong>Email</strong><div class="small">${s.email}</div></div>
+                                  <div><strong>Phone</strong><div class="small">${s.phone}</div></div>
+                                  <div><strong>Age</strong><div class="small">${s.age||"-"}</div></div>
+                                  <div><strong>Branch</strong><div class="small">${s.branch}</div></div>`;
       $("modalAddress").textContent = s.address || "-";
       $("modalBackdrop").style.display = "flex";
-      $("modalBackdrop").setAttribute("aria-hidden","false");
     }
 
     function closeModal(){
       $("modalBackdrop").style.display = "none";
-      $("modalBackdrop").setAttribute("aria-hidden","true");
     }
-
-    // ---- events ----
-    window.addEventListener("load", () => {
-      populateFilters();
-      renderTable(students);
-    });
-
-    $("filterBtn").addEventListener("click", applyFilters);
-    $("resetBtn").addEventListener("click", () => {
-      $("yearSelect").value = "";
-      $("semSelect").value = "";
-      $("branchSelect").value = "";
-      $("searchInput").value = "";
-      renderTable(students);
-    });
-    $("viewAllBtn").addEventListener("click", () => {
-      $("yearSelect").value = "";
-      $("semSelect").value = "";
-      $("branchSelect").value = "";
-      $("searchInput").value = "";
-      renderTable(students);
-    });
-    $("searchInput").addEventListener("keyup", (e) => {
-      // Live filter on Enter or when user types (lightweight)
-      if(e.key === "Enter"){
-        applyFilters();
-      } else if(e.target.value.length === 0){
-        // if cleared, show filters result or all
-        applyFilters();
-      }
-    });
 
     $("modalClose").addEventListener("click", closeModal);
-    $("modalBackdrop").addEventListener("click", (ev) => {
-      if(ev.target === $("modalBackdrop")) closeModal();
-    });
+    $("modalBackdrop").addEventListener("click", e=>{ if(e.target.id==="modalBackdrop") closeModal(); });
 
-    // Accessibility: close modal with Escape
-    window.addEventListener("keydown", (e) => {
-      if(e.key === "Escape") closeModal();
-    });
+    $("filterBtn").onclick = applyFilters;
+    $("resetBtn").onclick = ()=>{ $("yearSelect").value=""; $("semSelect").value=""; $("branchSelect").value=""; $("searchInput").value=""; renderTable(students); };
+    $("viewAllBtn").onclick = ()=>renderTable(students);
+    $("searchInput").onkeyup = e=>{ if(e.key==="Enter" || e.target.value==="") applyFilters(); };
+    $("printBtn").onclick = ()=>window.print();
 
-    // Optional: expose a function to add new student (for integration)
-    // Example: addStudent({name:"X", year:1, sem:1, branch:"CSE", email:"", phone:"", age:18, address:""})
-    function addStudent(obj){
-      const maxId = students.length ? Math.max(...students.map(s=>s.id)) : 0;
-      obj.id = maxId + 1;
-      students.push(obj);
-      // refresh filters & table
-      // clear and repopulate filter selects (so new branch/year/sem appear)
-      // For simplicity, we re-create the selects:
-      ["yearSelect","semSelect","branchSelect"].forEach(id=>{
-        const el = $(id);
-        // remove all options except the first
-        while(el.options.length > 1) el.remove(1);
-      });
+    $("addStudentForm").addEventListener("submit", e=>{
+      e.preventDefault();
+      const newStudent = {
+        id: students.length ? Math.max(...students.map(s=>s.id))+1 : 1,
+        name: $("name").value.trim(),
+        year: +$("year").value,
+        sem: +$("sem").value,
+        branch: $("branch").value.trim(),
+        email: $("email").value.trim(),
+        phone: $("phone").value.trim(),
+        age: $("age").value ? +$("age").value : "",
+        address: $("address").value.trim()
+      };
+      students.push(newStudent);
       populateFilters();
-      applyFilters();
-    }
+      renderTable(students);
+      e.target.reset();
+    });
 
-    // If you want to use addStudent from browser console, attach to window:
-    window.app = { addStudent, students };
+    window.onload = ()=>{ populateFilters(); renderTable(students); };
   </script>
 </body>
 </html>
