@@ -1,379 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Career Recommendation Chatbot</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        /* A more modern and clean interface for the chatbot */
-        body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(to right top, #65dfc9, #6cdbeb); /* Subtle gradient background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        #chatbot-container {
-            width: 100%;
-            max-width: 480px;
-            height: 90vh;
-            max-height: 720px;
-            background-color: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        #chat-header {
-            background: linear-gradient(45deg, #007bff, #0056b3); /* Blue gradient background */
-            color: #fff; /* White text for contrast */
-            padding: 20px;
-            text-align: center;
-            font-weight: 600; /* Bolder font */
-            font-size: 1.2rem;
-            flex-shrink: 0;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* Subtle text shadow for depth */
-        }
-        #chat-window {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background-color: #f9f9f9;
-        }
-        .message {
-            max-width: 75%;
-            padding: 12px 18px;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-        .bot-message {
-            background-color: #eef1f5;
-            color: #333;
-            align-self: flex-start;
-            border-radius: 20px 20px 20px 5px;
-        }
-        .user-message {
-            background-color: #007bff; /* Bright blue for user */
-            color: #fff;
-            align-self: flex-end;
-            border-radius: 20px 20px 5px 20px;
-        }
-        #input-container {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            border-top: 1px solid #f0f0f0;
-            background-color: #fff;
-        }
-        #user-input {
-            flex-grow: 1;
-            border: none;
-            background-color: #f0f2f5;
-            border-radius: 20px;
-            padding: 12px 18px;
-            font-size: 16px;
-            font-family: 'Poppins', sans-serif;
-        }
-        #user-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-        }
-        #send-btn {
-            background-color: #007bff; /* Bright blue */
-            color: white;
-            border: none;
-            width: 44px;
-            height: 44px;
-            margin-left: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #send-btn:hover {
-            background-color: #0056b3; /* Darker blue on hover */
-        }
-        #send-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Profiles — Viewer</title>
+  <style>
+    :root{
+      --bg:#f7fafc; --card:#fff; --muted:#6b7280; --accent:#2563eb;
+      --border:#e6e9ef;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    body{margin:0;background:var(--bg);color:#111;}
+    .container{max-width:1100px;margin:36px auto;padding:20px;}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    h1{font-size:20px;margin:0;}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    select,input[type="search"]{padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;}
+    button{padding:8px 12px;border-radius:8px;border:0;background:var(--accent);color:#fff;cursor:pointer;}
+    button.ghost{background:#fff;color:var(--accent);border:1px solid var(--border);}
+    .card{background:var(--card);border-radius:12px;padding:14px;border:1px solid var(--border);box-shadow:0 6px 18px rgba(16,24,40,0.04);}
+    table{width:100%;border-collapse:collapse;margin-top:14px;}
+    th,td{padding:10px 8px;text-align:left;border-bottom:1px solid #f1f3f6;font-size:14px;}
+    th{color:var(--muted);font-weight:600;}
+    tr:hover td{background:#fbfdff;}
+    .tag{display:inline-block;padding:6px 8px;border-radius:999px;background:#eef2ff;color:#1e3a8a;font-weight:600;font-size:12px;}
+    .actions button{margin-right:6px;}
+    .small{font-size:13px;color:var(--muted);}
+    .footer{margin-top:10px;color:var(--muted);font-size:13px;}
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.5);display:none;align-items:center;justify-content:center;padding:18px;}
+    .modal{width:640px;max-width:100%;background:#fff;border-radius:10px;padding:18px;border:1px solid var(--border);}
+    .modal h3{margin:0 0 6px 0;}
+    .modal .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+    .close-btn{background:#ef4444;color:#fff;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;float:right;}
+    @media (max-width:640px){
+      .controls{flex-direction:column;align-items:stretch;}
+      .modal .grid{grid-template-columns:1fr;}
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>Student Profiles — Viewer</h1>
+      <div class="controls">
+        <label class="small">Search:
+          <input id="searchInput" type="search" placeholder="Name, email, phone..." />
+        </label>
+      </div>
+    </header>
 
-    <div id="chatbot-container">
-        <div id="chat-header">
-            Career Advisor Bot
-        </div>
-        <div id="chat-window">
-            <!-- Messages will be added here by JavaScript -->
-        </div>
-        <div id="input-container">
-            <input type="text" id="user-input" placeholder="Type a message...">
-            <button id="send-btn">
-                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
-            </button>
-        </div>
+    <section class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <label class="small">Year:
+          <select id="yearSelect">
+            <option value="">All Years</option>
+          </select>
+        </label>
+
+        <label class="small">Semester:
+          <select id="semSelect">
+            <option value="">All Semesters</option>
+          </select>
+        </label>
+
+        <label class="small">Branch:
+          <select id="branchSelect">
+            <option value="">All Branches</option>
+          </select>
+        </label>
+
+        <button id="filterBtn">Apply Filters</button>
+        <button id="resetBtn" class="ghost">Reset Filters</button>
+        <button id="viewAllBtn" class="ghost">View All Students</button>
+      </div>
+
+      <div id="resultsArea">
+        <table id="studentsTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Year</th>
+              <th>Semester</th>
+              <th>Branch</th>
+              <th>Email / Phone</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTbody">
+            <!-- rows injected here -->
+          </tbody>
+        </table>
+
+        <div class="footer small" id="countInfo"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" id="detailModal">
+      <button class="close-btn" id="modalClose">Close</button>
+      <h3 id="modalName"></h3>
+      <div class="small" id="modalMeta"></div>
+      <div class="grid" id="modalGrid">
+        <!-- details -->
+      </div>
+      <div style="margin-top:12px;">
+        <strong>Address</strong>
+        <p id="modalAddress" class="small"></p>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // --- DOM Elements ---
-        const chatWindow = document.getElementById('chat-window');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
+  <script>
+    // ---- Sample data ----
+    const students = [
+      {id:1, name:"Asha Rao", year:1, sem:1, branch:"CSE", email:"asha.rao@example.com", phone:"+91-9876543210", age:18, address:"12 MG Road, Bangalore"},
+      {id:2, name:"Rohan Kumar", year:2, sem:3, branch:"ECE", email:"rohan.k@example.com", phone:"+91-9123456780", age:19, address:"45 5th Cross, Mysore"},
+      {id:3, name:"Priya Sharma", year:3, sem:5, branch:"IT", email:"priya.s@example.com", phone:"+91-9988776655", age:20, address:"22 Flower St, Pune"},
+      {id:4, name:"Karthik S", year:2, sem:4, branch:"CSE", email:"karthik.s@example.com", phone:"+91-9234567890", age:19, address:"9 Lake View, Hubli"},
+      {id:5, name:"Nisha Patil", year:1, sem:2, branch:"Mechanical", email:"nisha.p@example.com", phone:"+91-9012345678", age:18, address:"101 Palm Ave, Kolhapur"},
+      {id:6, name:"Anil Gupta", year:4, sem:8, branch:"Civil", email:"anil.g@example.com", phone:"+91-9898989898", age:21, address:"7 River Road, Nagpur"},
+      // add more sample students here as needed
+    ];
 
-        // --- Chatbot State ---
-        let conversationState = 0; // Tracks where we are in the conversation
-        const userDetails = {
-            cgpa: null,
-            course: '',
-            skills: ''
-        };
-        
-        const questions = [
-            "Hello! I'm here to help you with career recommendations. To start, what is your CGPA (e.g., 8.5)?",
-            "Great! Now, what is your course or major? (e.g., computer science, mechanical, electronics, AI&ML, civil)"
-        ];
+    // ---- Utilities ----
+    const $ = id => document.getElementById(id);
+    const uniqueSorted = (arr) => Array.from(new Set(arr)).sort((a,b)=>a-b);
 
-        // --- Functions ---
+    // ---- populate filter dropdowns dynamically based on data ----
+    function populateFilters(){
+      const years = uniqueSorted(students.map(s=>s.year));
+      const sems = uniqueSorted(students.map(s=>s.sem));
+      const branches = Array.from(new Set(students.map(s=>s.branch))).sort();
 
-        /**
-         * Appends a message to the chat window.
-         * @param {string} text - The message text.
-         * @param {string} sender - 'user' or 'bot'.
-         */
-        function addMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-            messageDiv.textContent = text;
-            chatWindow.appendChild(messageDiv);
-            chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll to the latest message
-        }
+      const yearSelect = $("yearSelect");
+      years.forEach(y => {
+        const opt = document.createElement("option");
+        opt.value = y; opt.textContent = `Year ${y}`;
+        yearSelect.appendChild(opt);
+      });
 
-        /**
-         * Simulates bot thinking and sends a response.
-         * @param {string} text - The bot's message.
-         */
-        function botResponse(text) {
-            setTimeout(() => {
-                addMessage(text, 'bot');
-            }, 500); // Wait 0.5 seconds to feel more natural
-        }
+      const semSelect = $("semSelect");
+      sems.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = `Sem ${s}`;
+        semSelect.appendChild(opt);
+      });
 
-        /**
-         * Gets the relevant skills question based on the user's course.
-         * @param {string} course - The user's course.
-         * @returns {string} The skills question.
-         */
-        function getSkillsQuestion(course) {
-            const courseLower = course.toLowerCase();
-            let skillsExample = "";
+      const branchSelect = $("branchSelect");
+      branches.forEach(b => {
+        const opt = document.createElement("option");
+        opt.value = b; opt.textContent = b;
+        branchSelect.appendChild(opt);
+      });
+    }
 
-            if (courseLower.includes('computer science') || courseLower.includes('information technology')) {
-                skillsExample = "programming, animation, data analysis, UI/UX";
-            } else if (courseLower.includes('mechanical')) {
-                skillsExample = "CAD, robotics, thermal design, manufacturing";
-            } else if (courseLower.includes('electronics')) {
-                skillsExample = "embedded systems, VLSI, networking, signal processing";
-            } else if (courseLower.includes('ai') || courseLower.includes('ml')) {
-                skillsExample = "python, tensorflow, data science, NLP";
-            } else if (courseLower.includes('civil')) {
-                skillsExample = "structural design, AutoCAD, surveying, project management";
-            } else {
-                skillsExample = "python, design, marketing, data analysis"; // A generic default
-            }
-            
-            return Thanks. Finally, what are some of your skills or interests? (e.g., ${skillsExample});
-        }
-
-
-        /**
-         * Gets a career recommendation based on user details.
-         * This is a simple rule-based "AI" logic.
-         * @returns {string} The career recommendation.
-         */
-        function getRecommendation() {
-            const course = userDetails.course.toLowerCase();
-            const skills = userDetails.skills.toLowerCase();
-            
-            // --- Recommendation Logic ---
-            if (course.includes('computer science') || course.includes('information technology')) {
-                if (skills.includes('programming') || skills.includes('python') || skills.includes('java')) {
-                    return "Software Development Engineer (SDE). This is a strong path for programmers. Focus on data structures and algorithms to crack interviews at top companies.";
-                } else if (skills.includes('data expert') || skills.includes('data') || skills.includes('machine learning')) {
-                    return "Data Scientist or Analyst. Your interest in data is valuable in a field with high demand. Consider learning tools like SQL, Python libraries (Pandas, NumPy), and visualization tools.";
-                } else if (skills.includes('graphic designer') || skills.includes('designer') || skills.includes('ui/ux')) {
-                    return "UI/UX Designer. This role combines creativity with technology. Build a portfolio with your designs using tools like Figma or Adobe XD.";
-                } else if (skills.includes('animation') || skills.includes('vfx')) {
-                    return "3D Artist or Animator. A creative and exciting field. Focus on mastering software like Blender, Maya, or Cinema 4D.";
-                } else {
-                    return "A generalist role like a Technical Consultant or IT Support Specialist could be a great start. It's a good way to explore different areas of the tech industry.";
-                }
-            } else if (course.includes('mechanical')) {
-                if (skills.includes('design') || skills.includes('cad') || skills.includes('autocad')) {
-                    return "Design Engineer. Your skills in CAD software are highly valuable in manufacturing and product design.";
-                } else if (skills.includes('robotics') || skills.includes('automation')) {
-                    return "Robotics/Automation Engineer. This is a rapidly growing field with exciting opportunities.";
-                } else {
-                     return "Core Mechanical Engineer in the manufacturing or thermal engineering sector. Consider getting certified in a specific domain.";
-                }
-            } else if (course.includes('electronics')) {
-                if (skills.includes('embedded')) {
-                    return "Embedded Systems Engineer. A great field combining hardware and software. Focus on C/C++ and microcontroller programming.";
-                } else if (skills.includes('vlsi')) {
-                    return "VLSI Design Engineer. This is a core electronics role in chip design. Knowledge of Verilog/VHDL is key.";
-                } else if (skills.includes('network')) {
-                    return "Network Engineer. You'll be responsible for designing and managing communication networks. Cisco certifications (like CCNA) are valuable.";
-                } else {
-                    return "Electronics Engineer in a role like telecommunications or signal processing. Gaining practical experience with hardware kits is recommended.";
-                }
-            } else if (course.includes('ai') || course.includes('ml')) {
-                if (skills.includes('python') || skills.includes('tensorflow') || skills.includes('pytorch')) {
-                    return "Machine Learning Engineer. You'll build and deploy AI models. A strong portfolio of projects on GitHub is essential.";
-                } else if (skills.includes('data science') || skills.includes('nlp')) {
-                    return "Data Scientist specializing in Natural Language Processing (NLP). This is a very hot field right now. Focus on statistical modeling and large language models.";
-                } else {
-                    return "AI Research Assistant or Data Analyst. These roles are a great entry point into the AI/ML world. Focus on strengthening your math and programming fundamentals.";
-                }
-            } else if (course.includes('civil')) {
-                if (skills.includes('structural') || skills.includes('design')) {
-                    return "Structural Design Engineer. You will design buildings, bridges, and other structures. Proficiency in software like STAAD.Pro is crucial.";
-                } else if (skills.includes('autocad') || skills.includes('surveying')) {
-                    return "Civil Site Engineer or Surveyor. A hands-on role involving project execution and land surveying.";
-                } else if (skills.includes('project management')) {
-                    return "Construction Project Manager. This role combines technical knowledge with management skills. A PMP certification can be beneficial.";
-                } else {
-                    return "A role in Urban Planning or Environmental Engineering could be a good fit. These areas are growing in importance.";
-                }
-            } else if (course.includes('business') || course.includes('bba')) {
-                if (skills.includes('marketing') || skills.includes('seo')) {
-                    return "Digital Marketing Specialist. Focus on SEO/SEM and social media marketing to build a strong profile.";
-                } else if (skills.includes('finance') || skills.includes('investing')) {
-                    return "Financial Analyst. Your business background is a great foundation for a career in finance.";
-                } else if (skills.includes('hr') || skills.includes('human resources')) {
-                    return "Human Resources (HR) Generalist. A great role if you enjoy working with people and shaping company culture.";
-                } else {
-                    return "Business Development Associate or Management Trainee. These roles provide great exposure to how businesses operate.";
-                }
-            } else if (course.includes('biology') || course.includes('life science')) {
-                if (skills.includes('pharmacy') || skills.includes('pharmacist')) {
-                    return "Pharmacist or Pharmaceutical Researcher. This path requires further education but is stable and impactful.";
-                } else if (skills.includes('research') || skills.includes('genetics')) {
-                    return "Research Scientist or Genetic Counselor. A Master's or PhD is often required, but it's a very rewarding field.";
-                } else if (skills.includes('lab') || skills.includes('biotechnology')) {
-                    return "Biotechnologist or Laboratory Technician. These roles are crucial in medical and industrial research.";
-                } else {
-                    return "Healthcare Administrator or Medical Writer. These roles combine your scientific background with management or communication skills.";
-                }
-            } else {
-                return "Based on your inputs, a generalist role like a Project Coordinator or a Business Analyst could be a good fit. Exploring internships in different fields is highly recommended to find your passion.";
-            }
-        }
-        
-        /**
-         * Handles the main conversation flow.
-         * @param {string} input - The user's input text.
-         */
-        function handleConversation(input) {
-            switch (conversationState) {
-                case 0: // Asking for CGPA
-                    if (isNaN(parseFloat(input))) {
-                        botResponse("Please enter a valid number for your CGPA.");
-                        return;
-                    }
-                    userDetails.cgpa = parseFloat(input);
-
-                    if (userDetails.cgpa < 6.0) {
-                        // Low CGPA path
-                        botResponse("Your CGPA is one part of your story, but your skills and passion are just as important. Don't worry, be positive!");
-                        botResponse("Building a strong project portfolio and gaining practical experience through internships can make a huge difference. You could try roles like a Junior Developer, QA Tester, or a support role in your field to get started.");
-                        setTimeout(() => {
-                            botResponse("If you want to start over, just type 'reset'.");
-                        }, 1000);
-                        conversationState = 3; // Go to end state
-                    } else {
-                        // Good CGPA path
-                        conversationState++;
-                        botResponse(questions[conversationState]); // Ask for course
-                    }
-                    break;
-
-                case 1: // Asking for course
-                    userDetails.course = input;
-                    conversationState++;
-                    const skillsQuestion = getSkillsQuestion(userDetails.course); // Get dynamic question
-                    botResponse(skillsQuestion);
-                    break;
-
-                case 2: // Asking for skills
-                    userDetails.skills = input;
-                    
-                    botResponse("Thank you! Based on your profile, here is my recommendation:");
-                    const recommendation = getRecommendation();
-                    botResponse(recommendation);
-
-                    setTimeout(() => {
-                        botResponse("If you want to start over, just type 'reset'.");
-                    }, 1000);
-                    conversationState = 3; // End of conversation
-                    break;
-                
-                case 3: // Conversation ended
-                    if (input.toLowerCase().trim() === 'reset') {
-                        conversationState = 0;
-                        userDetails.cgpa = null;
-                        userDetails.course = '';
-                        userDetails.skills = '';
-                        botResponse(questions[0]);
-                    } else {
-                        botResponse("Our current session is complete. Please type 'reset' to begin a new recommendation.");
-                    }
-                    break;
-            }
-        }
-        
-        /**
-         * Handles the user sending a message.
-         */
-        function sendMessage() {
-            const userInputText = userInput.value.trim();
-            if (userInputText === '') return;
-
-            addMessage(userInputText, 'user');
-            userInput.value = '';
-
-            handleConversation(userInputText);
-        }
-
-        // --- Event Listeners ---
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+    function renderTable(list){
+      const tbody = $("studentsTbody");
+      tbody.innerHTML = "";
+      if(!list.length){
+        tbody.innerHTML = `<tr><td colspan="7" class="small">No students found.</td></tr>`;
+      } else {
+        list.forEach((s, idx) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${idx+1}</td>
+            <td><strong>${escapeHtml(s.name)}</strong><div class="small">${s.age ? s.age + " yrs" : ""}</div></td>
+            <td>Year ${s.year}</td>
+            <td>Sem ${s.sem}</td>
+            <td>${s.branch}</td>
+            <td class="small">${escapeHtml(s.email)}<br>${escapeHtml(s.phone)}</td>
+            <td class="actions">
+              <button data-id="${s.id}" class="viewBtn">View</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
         });
+      }
+      $("countInfo").textContent = `Showing ${list.length} student(s).`;
+      attachViewHandlers();
+    }
 
-        // --- Initial Message ---
-        window.onload = () => {
-            botResponse(questions[0]);
+    function escapeHtml(text){
+      if(!text) return "";
+      return text.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+    }
+
+    function attachViewHandlers(){
+      document.querySelectorAll(".viewBtn").forEach(btn=>{
+        btn.onclick = () => {
+          const id = Number(btn.getAttribute("data-id"));
+          openDetailModal(id);
         };
-    </script>
+      });
+    }
 
+    // ---- filtering logic ----
+    function applyFilters(){
+      const yearVal = $("yearSelect").value;
+      const semVal = $("semSelect").value;
+      const branchVal = $("branchSelect").value;
+      const searchVal = $("searchInput").value.trim().toLowerCase();
+
+      let filtered = students.slice();
+
+      if(yearVal) filtered = filtered.filter(s => String(s.year) === String(yearVal));
+      if(semVal) filtered = filtered.filter(s => String(s.sem) === String(semVal));
+      if(branchVal) filtered = filtered.filter(s => s.branch === branchVal);
+      if(searchVal){
+        filtered = filtered.filter(s => {
+          return (s.name && s.name.toLowerCase().includes(searchVal))
+              || (s.email && s.email.toLowerCase().includes(searchVal))
+              || (s.phone && s.phone.toLowerCase().includes(searchVal))
+              || (s.branch && s.branch.toLowerCase().includes(searchVal));
+        });
+      }
+      renderTable(filtered);
+    }
+
+    // ---- modal logic ----
+    function openDetailModal(id){
+      const s = students.find(x => x.id === id);
+      if(!s) return;
+      $("modalName").textContent = s.name;
+      $("modalMeta").textContent = `ID: ${s.id} • ${s.branch} • Year ${s.year}, Sem ${s.sem}`;
+      const grid = $("modalGrid");
+      grid.innerHTML = `
+        <div><strong>Email</strong><div class="small">${escapeHtml(s.email)}</div></div>
+        <div><strong>Phone</strong><div class="small">${escapeHtml(s.phone)}</div></div>
+        <div><strong>Age</strong><div class="small">${s.age ?? "-"}</div></div>
+        <div><strong>Branch</strong><div class="small">${escapeHtml(s.branch)}</div></div>
+      `;
+      $("modalAddress").textContent = s.address || "-";
+      $("modalBackdrop").style.display = "flex";
+      $("modalBackdrop").setAttribute("aria-hidden","false");
+    }
+
+    function closeModal(){
+      $("modalBackdrop").style.display = "none";
+      $("modalBackdrop").setAttribute("aria-hidden","true");
+    }
+
+    // ---- events ----
+    window.addEventListener("load", () => {
+      populateFilters();
+      renderTable(students);
+    });
+
+    $("filterBtn").addEventListener("click", applyFilters);
+    $("resetBtn").addEventListener("click", () => {
+      $("yearSelect").value = "";
+      $("semSelect").value = "";
+      $("branchSelect").value = "";
+      $("searchInput").value = "";
+      renderTable(students);
+    });
+    $("viewAllBtn").addEventListener("click", () => {
+      $("yearSelect").value = "";
+      $("semSelect").value = "";
+      $("branchSelect").value = "";
+      $("searchInput").value = "";
+      renderTable(students);
+    });
+    $("searchInput").addEventListener("keyup", (e) => {
+      // Live filter on Enter or when user types (lightweight)
+      if(e.key === "Enter"){
+        applyFilters();
+      } else if(e.target.value.length === 0){
+        // if cleared, show filters result or all
+        applyFilters();
+      }
+    });
+
+    $("modalClose").addEventListener("click", closeModal);
+    $("modalBackdrop").addEventListener("click", (ev) => {
+      if(ev.target === $("modalBackdrop")) closeModal();
+    });
+
+    // Accessibility: close modal with Escape
+    window.addEventListener("keydown", (e) => {
+      if(e.key === "Escape") closeModal();
+    });
+
+    // Optional: expose a function to add new student (for integration)
+    // Example: addStudent({name:"X", year:1, sem:1, branch:"CSE", email:"", phone:"", age:18, address:""})
+    function addStudent(obj){
+      const maxId = students.length ? Math.max(...students.map(s=>s.id)) : 0;
+      obj.id = maxId + 1;
+      students.push(obj);
+      // refresh filters & table
+      // clear and repopulate filter selects (so new branch/year/sem appear)
+      // For simplicity, we re-create the selects:
+      ["yearSelect","semSelect","branchSelect"].forEach(id=>{
+        const el = $(id);
+        // remove all options except the first
+        while(el.options.length > 1) el.remove(1);
+      });
+      populateFilters();
+      applyFilters();
+    }
+
+    // If you want to use addStudent from browser console, attach to window:
+    window.app = { addStudent, students };
+  </script>
 </body>
 </html>
