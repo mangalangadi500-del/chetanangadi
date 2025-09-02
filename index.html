@@ -1,203 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Profile Creator</title>
-  <style>
-    :root {
-      --bg: #f7fafc; --card: #fff; --muted: #6b7280; --accent: #2563eb;
-      --border: #e6e9ef;
-      font-family: Arial, sans-serif;
-    }
-    body { margin: 0; background: var(--bg); color: #111; }
-    .container { max-width: 1100px; margin: 36px auto; padding: 20px; }
-    h1 { font-size: 20px; margin: 0 0 10px; }
-    h2 { font-size: 18px; margin-top: 0; }
-    .card { background: var(--card); border-radius: 12px; padding: 14px; border: 1px solid var(--border); margin-bottom: 20px; }
-    .controls, form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"] {
-      padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff;
-    }
-    button { padding: 8px 12px; border-radius: 8px; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
-    button.ghost { background: #fff; color: var(--accent); border: 1px solid var(--border); }
-    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
-    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #f1f3f6; font-size: 14px; }
-    th { color: var(--muted); font-weight: 600; }
-    tr:hover td { background: #fbfdff; }
-    .small { font-size: 13px; color: var(--muted); }
-    .footer { margin-top: 10px; color: var(--muted); font-size: 13px; }
-    .modal-backdrop { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.5); display: none; align-items: center; justify-content: center; padding: 18px; }
-    .modal { width: 640px; max-width: 100%; background: #fff; border-radius: 10px; padding: 18px; border: 1px solid var(--border); }
-    .modal h3 { margin: 0 0 6px 0; }
-    .modal .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-    .close-btn { background: #ef4444; color: #fff; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; float: right; }
-    @media (max-width: 640px) { .controls { flex-direction: column; align-items: stretch; } .modal .grid { grid-template-columns: 1fr; } }
-
-    /* Print view - hide form and filters */
+<meta charset="UTF-8">
+<title>Student Profile Creator</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    h1 { text-align: center; }
+    form, .controls, .view-section { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    label { display: block; margin-top: 10px; }
+    input, select, button { padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    button { cursor: pointer; background: #4CAF50; color: white; border: none; }
+    button.ghost { background: #888; }
+    table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
+    th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+    th { background: #f0f0f0; }
+    .action-btn { background: #e74c3c; padding: 5px 8px; border: none; border-radius: 4px; color: white; cursor: pointer; }
+    .hidden { display: none; }
     @media print {
-      form, .controls, .footer, .modal-backdrop { display: none !important; }
-      table { border: 1px solid #000; }
-      th, td { border: 1px solid #000; }
+        form, .controls, .view-options { display: none !important; }
+        table { border: 1px solid #000; }
+        th, td { border: 1px solid #000; }
     }
-  </style>
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Student Profile Creator</h1>
 
-    <!-- Add Student Form -->
-    <section class="card">
-      <h2>Add New Student</h2>
-      <form id="addStudentForm">
-        <input type="text" id="name" placeholder="Full Name" required>
-        <input type="number" id="year" placeholder="Year" min="1" max="4" required>
-        <input type="number" id="sem" placeholder="Semester" min="1" max="8" required>
-        <input type="text" id="branch" placeholder="Branch" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="tel" id="phone" placeholder="Phone" required>
-        <input type="number" id="age" placeholder="Age" min="15" max="30">
-        <input type="text" id="address" placeholder="Address">
-        <button type="submit">Add Student</button>
-      </form>
-    </section>
+<h1>Student Profile Creator</h1>
 
-    <!-- Filter + Table -->
-    <section class="card">
-      <div class="controls">
-        <label class="small">Year:
-          <select id="yearSelect"><option value="">All Years</option></select>
-        </label>
-        <label class="small">Semester:
-          <select id="semSelect"><option value="">All Semesters</option></select>
-        </label>
-        <label class="small">Branch:
-          <select id="branchSelect"><option value="">All Branches</option></select>
-        </label>
-        <input id="searchInput" type="text" placeholder="Search...">
-        <button id="filterBtn">Apply Filters</button>
-        <button id="resetBtn" class="ghost">Reset</button>
-        <button id="viewAllBtn" class="ghost">View All</button>
-        <button id="printBtn" class="ghost">🖨 Print</button>
-      </div>
+<!-- Add Student Form -->
+<form id="addStudentForm">
+    <h3>Add New Student</h3>
+    <label>Name: <input type="text" id="name" required></label>
+    <label>Year: <input type="number" id="year" min="1" max="5" required></label>
+    <label>Semester: <input type="number" id="semester" min="1" max="10" required></label>
+    <label>Branch: <input type="text" id="branch" required></label>
+    <label>Email: <input type="email" id="email" required></label>
+    <label>Phone: <input type="text" id="phone" required></label>
+    <label>Age: <input type="number" id="age" required></label>
+    <label>Address: <input type="text" id="address" required></label>
+    <button type="submit">Add Student</button>
+</form>
 
-      <table>
+<!-- View Options -->
+<div class="view-options">
+    <button id="viewAllBtn" type="button">View All Students</button>
+    <button id="viewBranchSemBtn" type="button">View Branch & Semester Wise</button>
+    <button id="viewYearBtn" type="button">View Year Wise</button>
+</div>
+
+<!-- Branch & Semester Filter -->
+<div id="branchSemFilter" class="controls hidden">
+    <label>Branch:
+        <select id="branchSelect"><option value="">Select Branch</option></select>
+    </label>
+    <label>Semester:
+        <select id="semSelect"><option value="">Select Semester</option></select>
+    </label>
+    <button id="applyBranchSemFilter" type="button">Apply Filter</button>
+</div>
+
+<!-- Year Filter -->
+<div id="yearFilter" class="controls hidden">
+    <label>Year:
+        <select id="yearSelect"><option value="">Select Year</option></select>
+    </label>
+    <button id="applyYearFilter" type="button">Apply Filter</button>
+</div>
+
+<!-- Student Table Section -->
+<div id="tableSection" class="view-section hidden">
+    <button id="printBtn" class="ghost" type="button">🖨 Print</button>
+    <table id="studentTable">
         <thead>
-          <tr>
-            <th>#</th><th>Name</th><th>Year</th><th>Sem</th><th>Branch</th><th>Email / Phone</th><th>Actions</th>
-          </tr>
+            <tr>
+                <th>Name</th><th>Year</th><th>Semester</th><th>Branch</th>
+                <th>Email</th><th>Phone</th><th>Actions</th>
+            </tr>
         </thead>
-        <tbody id="studentsTbody"></tbody>
-      </table>
-      <div class="footer small" id="countInfo"></div>
-    </section>
-  </div>
+        <tbody></tbody>
+    </table>
+</div>
 
-  <!-- Modal -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal">
-      <button class="close-btn" id="modalClose">Close</button>
-      <h3 id="modalName"></h3>
-      <div class="small" id="modalMeta"></div>
-      <div class="grid" id="modalGrid"></div>
-      <div style="margin-top:12px;"><strong>Address</strong><p id="modalAddress" class="small"></p></div>
-    </div>
-  </div>
+<script>
+    const students = [];
+    const tableBody = document.querySelector("#studentTable tbody");
 
-  <script>
-    const students = [
-      {id:1,name:"Asha Rao",year:1,sem:1,branch:"CSE",email:"asha@example.com",phone:"+91-9876543210",age:18,address:"Bangalore"},
-      {id:2,name:"Rohan Kumar",year:2,sem:3,branch:"ECE",email:"rohan@example.com",phone:"+91-9123456780",age:19,address:"Mysore"}
-    ];
-    const $ = id => document.getElementById(id);
-    const uniqueSorted = arr => Array.from(new Set(arr)).sort((a,b)=>a-b);
-    const escapeHtml = t => t ? t.replaceAll("&","&amp;").replaceAll("<","&lt;") : "";
+    function updateDropdowns() {
+        const branches = [...new Set(students.map(s => s.branch))].sort();
+        const semesters = [...new Set(students.map(s => s.semester))].sort();
+        const years = [...new Set(students.map(s => s.year))].sort();
 
-    function populateFilters(){
-      ["yearSelect","semSelect","branchSelect"].forEach(id=>{
-        const el = $(id);
-        while(el.options.length > 1) el.remove(1);
-      });
-      uniqueSorted(students.map(s=>s.year)).forEach(y=>$("yearSelect").append(new Option("Year "+y,y)));
-      uniqueSorted(students.map(s=>s.sem)).forEach(s=>$("semSelect").append(new Option("Sem "+s,s)));
-      Array.from(new Set(students.map(s=>s.branch))).sort().forEach(b=>$("branchSelect").append(new Option(b,b)));
+        document.getElementById("branchSelect").innerHTML =
+            '<option value="">Select Branch</option>' + branches.map(b => `<option>${b}</option>`).join("");
+        document.getElementById("semSelect").innerHTML =
+            '<option value="">Select Semester</option>' + semesters.map(s => `<option>${s}</option>`).join("");
+        document.getElementById("yearSelect").innerHTML =
+            '<option value="">Select Year</option>' + years.map(y => `<option>${y}</option>`).join("");
     }
 
-    function renderTable(list){
-      const tbody = $("studentsTbody");
-      tbody.innerHTML = "";
-      if(!list.length){
-        tbody.innerHTML = `<tr><td colspan="7" class="small">No students found.</td></tr>`;
-      } else {
-        list.forEach((s,i)=>{
-          tbody.innerHTML += `<tr>
-            <td>${i+1}</td>
-            <td><strong>${escapeHtml(s.name)}</strong><div class="small">${s.age||""} yrs</div></td>
-            <td>${s.year}</td><td>${s.sem}</td><td>${escapeHtml(s.branch)}</td>
-            <td class="small">${escapeHtml(s.email)}<br>${escapeHtml(s.phone)}</td>
-            <td><button class="viewBtn" data-id="${s.id}">View</button></td>
-          </tr>`;
-        });
-      }
-      $("countInfo").textContent = `Showing ${list.length} student(s)`;
-      document.querySelectorAll(".viewBtn").forEach(btn=>btn.onclick=()=>openDetailModal(+btn.dataset.id));
+    function renderTable(data) {
+        tableBody.innerHTML = data.map((s, index) => `
+            <tr>
+                <td>${s.name}</td>
+                <td>${s.year}</td>
+                <td>${s.semester}</td>
+                <td>${s.branch}</td>
+                <td>${s.email}</td>
+                <td>${s.phone}</td>
+                <td><button class="action-btn" onclick="deleteStudent(${index})">Delete</button></td>
+            </tr>
+        `).join("");
     }
 
-    function applyFilters(){
-      let list = students.slice();
-      if($("yearSelect").value) list = list.filter(s=>s.year==$("yearSelect").value);
-      if($("semSelect").value) list = list.filter(s=>s.sem==$("semSelect").value);
-      if($("branchSelect").value) list = list.filter(s=>s.branch==$("branchSelect").value);
-      const q = $("searchInput").value.toLowerCase();
-      if(q) list = list.filter(s=>Object.values(s).some(v=>String(v).toLowerCase().includes(q)));
-      renderTable(list);
+    function deleteStudent(index) {
+        if (confirm("Are you sure you want to delete this student?")) {
+            students.splice(index, 1);
+            document.getElementById("tableSection").classList.add("hidden");
+            updateDropdowns();
+        }
     }
 
-    function openDetailModal(id){
-      const s = students.find(st=>st.id===id);
-      $("modalName").textContent = s.name;
-      $("modalMeta").textContent = `ID: ${s.id} • ${s.branch} • Year ${s.year}, Sem ${s.sem}`;
-      $("modalGrid").innerHTML = `<div><strong>Email</strong><div class="small">${s.email}</div></div>
-                                  <div><strong>Phone</strong><div class="small">${s.phone}</div></div>
-                                  <div><strong>Age</strong><div class="small">${s.age||"-"}</div></div>
-                                  <div><strong>Branch</strong><div class="small">${s.branch}</div></div>`;
-      $("modalAddress").textContent = s.address || "-";
-      $("modalBackdrop").style.display = "flex";
-    }
-
-    function closeModal(){
-      $("modalBackdrop").style.display = "none";
-    }
-
-    $("modalClose").addEventListener("click", closeModal);
-    $("modalBackdrop").addEventListener("click", e=>{ if(e.target.id==="modalBackdrop") closeModal(); });
-
-    $("filterBtn").onclick = applyFilters;
-    $("resetBtn").onclick = ()=>{ $("yearSelect").value=""; $("semSelect").value=""; $("branchSelect").value=""; $("searchInput").value=""; renderTable(students); };
-    $("viewAllBtn").onclick = ()=>renderTable(students);
-    $("searchInput").onkeyup = e=>{ if(e.key==="Enter" || e.target.value==="") applyFilters(); };
-    $("printBtn").onclick = ()=>window.print();
-
-    $("addStudentForm").addEventListener("submit", e=>{
-      e.preventDefault();
-      const newStudent = {
-        id: students.length ? Math.max(...students.map(s=>s.id))+1 : 1,
-        name: $("name").value.trim(),
-        year: +$("year").value,
-        sem: +$("sem").value,
-        branch: $("branch").value.trim(),
-        email: $("email").value.trim(),
-        phone: $("phone").value.trim(),
-        age: $("age").value ? +$("age").value : "",
-        address: $("address").value.trim()
-      };
-      students.push(newStudent);
-      populateFilters();
-      renderTable(students);
-      e.target.reset();
+    document.getElementById("addStudentForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const student = {
+            name: document.getElementById("name").value,
+            year: document.getElementById("year").value,
+            semester: document.getElementById("semester").value,
+            branch: document.getElementById("branch").value,
+            email: document.getElementById("email").value,
+            phone: document.getElementById("phone").value,
+            age: document.getElementById("age").value,
+            address: document.getElementById("address").value
+        };
+        students.push(student);
+        updateDropdowns();
+        e.target.reset();
+        alert("Student added successfully!");
     });
 
-    window.onload = ()=>{ populateFilters(); renderTable(students); };
-  </script>
+    document.getElementById("viewAllBtn").addEventListener("click", () => {
+        if (students.length === 0) { alert("No students found!"); return; }
+        renderTable(students);
+        document.getElementById("tableSection").classList.remove("hidden");
+        document.getElementById("branchSemFilter").classList.add("hidden");
+        document.getElementById("yearFilter").classList.add("hidden");
+    });
+
+    document.getElementById("viewBranchSemBtn").addEventListener("click", () => {
+        if (students.length === 0) { alert("No students found!"); return; }
+        document.getElementById("branchSemFilter").classList.remove("hidden");
+        document.getElementById("yearFilter").classList.add("hidden");
+        document.getElementById("tableSection").classList.remove("hidden");
+        renderTable([]); // empty until filter applied
+    });
+
+    document.getElementById("viewYearBtn").addEventListener("click", () => {
+        if (students.length === 0) { alert("No students found!"); return; }
+        document.getElementById("yearFilter").classList.remove("hidden");
+        document.getElementById("branchSemFilter").classList.add("hidden");
+        document.getElementById("tableSection").classList.remove("hidden");
+        renderTable([]); // empty until filter applied
+    });
+
+    document.getElementById("applyBranchSemFilter").addEventListener("click", () => {
+        const branchVal = document.getElementById("branchSelect").value;
+        const semVal = document.getElementById("semSelect").value;
+        const filtered = students.filter(s =>
+            (branchVal === "" || s.branch === branchVal) &&
+            (semVal === "" || s.semester == semVal)
+        );
+        if (filtered.length === 0) { alert("No matching students found!"); }
+        renderTable(filtered);
+    });
+
+    document.getElementById("applyYearFilter").addEventListener("click", () => {
+        const yearVal = document.getElementById("yearSelect").value;
+        const filtered = students.filter(s =>
+            (yearVal === "" || s.year == yearVal)
+        );
+        if (filtered.length === 0) { alert("No matching students found!"); }
+        renderTable(filtered);
+    });
+
+    document.getElementById("printBtn").addEventListener("click", () => {
+        window.print();
+    });
+</script>
+
 </body>
 </html>
