@@ -6,17 +6,16 @@
 <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     h1 { text-align: center; }
-    form { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    form, .filters, .actions { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
     label { display: block; margin-top: 8px; }
     input, select { width: 100%; padding: 6px; margin-top: 4px; }
-    button { padding: 6px 12px; margin-top: 10px; }
+    button { padding: 6px 12px; margin-top: 10px; cursor: pointer; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f4f4f4; }
     .hidden { display: none; }
-    .actions { margin-top: 20px; }
     @media print {
-        form, .actions { display: none; }
+        form, .filters, .actions { display: none; }
     }
 </style>
 </head>
@@ -44,7 +43,7 @@
 </div>
 
 <!-- Filters -->
-<div id="filters" class="hidden">
+<div id="filters" class="filters hidden">
     <label>Branch:
         <select id="branchSelect"></select>
     </label>
@@ -73,17 +72,8 @@
 </div>
 
 <script>
-let students = [];
-
-const form = document.getElementById("addStudentForm");
-const tableSection = document.getElementById("tableSection");
-const tableBody = document.getElementById("tableBody");
-const filters = document.getElementById("filters");
-const branchSelect = document.getElementById("branchSelect");
-const semSelect = document.getElementById("semSelect");
-
 // Add Student
-form.addEventListener("submit", (e) => {
+document.getElementById("addStudentForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const newStudent = {
         name: document.getElementById("name").value.trim(),
@@ -93,36 +83,41 @@ form.addEventListener("submit", (e) => {
         email: document.getElementById("email").value.trim(),
         phone: document.getElementById("phone").value.trim()
     };
-    students.push(newStudent);
-    form.reset();
+    await fetch("/add_student", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newStudent)
+    });
     alert("Student added successfully!");
-    updateDropdowns();
+    e.target.reset();
 });
 
-// View All Students
-document.getElementById("viewAllBtn").addEventListener("click", () => {
-    filters.classList.add("hidden");
+// Load All Students
+document.getElementById("viewAllBtn").addEventListener("click", async () => {
+    const res = await fetch("/get_students");
+    const students = await res.json();
     renderTable(students);
-    tableSection.classList.remove("hidden");
+    document.getElementById("filters").classList.add("hidden");
+    document.getElementById("tableSection").classList.remove("hidden");
 });
 
 // View Branch & Semester Wise
-document.getElementById("viewBranchSemBtn").addEventListener("click", () => {
-    filters.classList.remove("hidden");
-    tableSection.classList.add("hidden");
-    updateDropdowns();
+document.getElementById("viewBranchSemBtn").addEventListener("click", async () => {
+    const res = await fetch("/get_students");
+    const students = await res.json();
+    populateFilters(students);
+    document.getElementById("filters").classList.remove("hidden");
+    document.getElementById("tableSection").classList.add("hidden");
 });
 
 // Apply Filter
-document.getElementById("applyFilterBtn").addEventListener("click", () => {
-    const branch = branchSelect.value;
-    const sem = semSelect.value;
-    const filtered = students.filter(s => 
-        (branch === "" || s.branch === branch) && 
-        (sem === "" || s.semester === sem)
-    );
-    renderTable(filtered);
-    tableSection.classList.remove("hidden");
+document.getElementById("applyFilterBtn").addEventListener("click", async () => {
+    const branch = document.getElementById("branchSelect").value;
+    const sem = document.getElementById("semSelect").value;
+    const res = await fetch(`/get_students_filtered?branch=${branch}&semester=${sem}`);
+    const students = await res.json();
+    renderTable(students);
+    document.getElementById("tableSection").classList.remove("hidden");
 });
 
 // Print
@@ -130,10 +125,13 @@ document.getElementById("printBtn").addEventListener("click", () => {
     window.print();
 });
 
-// Update dropdowns
-function updateDropdowns() {
-    const branches = [...new Set(students.map(s => s.branch))];
-    const semesters = [...new Set(students.map(s => s.semester))];
+// Populate filter dropdowns
+function populateFilters(students) {
+    const branchSelect = document.getElementById("branchSelect");
+    const semSelect = document.getElementById("semSelect");
+
+    const branches = [...new Set(students.map(s => s[4]))];
+    const semesters = [...new Set(students.map(s => s[3]))];
 
     branchSelect.innerHTML = '<option value="">All</option>' + branches.map(b => `<option value="${b}">${b}</option>`).join("");
     semSelect.innerHTML = '<option value="">All</option>' + semesters.map(s => `<option value="${s}">${s}</option>`).join("");
@@ -141,26 +139,26 @@ function updateDropdowns() {
 
 // Render Table
 function renderTable(data) {
+    const tableBody = document.getElementById("tableBody");
     tableBody.innerHTML = data.map(s => `
         <tr>
-            <td>${s.name}</td>
-            <td>${s.year}</td>
-            <td>${s.semester}</td>
-            <td>${s.branch}</td>
-            <td>${s.email}</td>
-            <td>${s.phone}</td>
-            <td><button onclick="deleteStudentByName('${s.name}')">❌</button></td>
+            <td>${s[1]}</td>
+            <td>${s[2]}</td>
+            <td>${s[3]}</td>
+            <td>${s[4]}</td>
+            <td>${s[5]}</td>
+            <td>${s[6]}</td>
+            <td><button onclick="deleteStudent(${s[0]})">❌</button></td>
         </tr>
     `).join("");
 }
 
 // Delete Student
-function deleteStudentByName(name) {
+async function deleteStudent(id) {
     if (confirm("Are you sure you want to delete this student?")) {
-        students = students.filter(s => s.name !== name);
+        await fetch(`/delete_student/${id}`, { method: "DELETE" });
         alert("Student deleted!");
-        tableSection.classList.add("hidden");
-        updateDropdowns();
+        document.getElementById("viewAllBtn").click(); // Refresh list
     }
 }
 </script>
