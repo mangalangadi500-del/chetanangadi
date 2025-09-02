@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Recommendation Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* A more modern and clean interface for the chatbot */
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(to right top, #65dfc9, #6cdbeb); /* Subtle gradient background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #chatbot-container {
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
+            max-height: 720px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #chat-header {
+            background: linear-gradient(45deg, #007bff, #0056b3); /* Blue gradient background */
+            color: #fff; /* White text for contrast */
+            padding: 20px;
+            text-align: center;
+            font-weight: 600; /* Bolder font */
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* Subtle text shadow for depth */
+        }
+        #chat-window {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            max-width: 75%;
+            padding: 12px 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .bot-message {
+            background-color: #eef1f5;
+            color: #333;
+            align-self: flex-start;
+            border-radius: 20px 20px 20px 5px;
+        }
+        .user-message {
+            background-color: #007bff; /* Bright blue for user */
+            color: #fff;
+            align-self: flex-end;
+            border-radius: 20px 20px 5px 20px;
+        }
+        #input-container {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-top: 1px solid #f0f0f0;
+            background-color: #fff;
+        }
+        #user-input {
+            flex-grow: 1;
+            border: none;
+            background-color: #f0f2f5;
+            border-radius: 20px;
+            padding: 12px 18px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+        }
+        #user-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+        }
+        #send-btn {
+            background-color: #007bff; /* Bright blue */
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            margin-left: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #send-btn:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        #send-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chatbot-container">
+        <div id="chat-header">
+            Career Advisor Bot
+        </div>
+        <div id="chat-window">
+            <!-- Messages will be added here by JavaScript -->
+        </div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Type a message...">
+            <button id="send-btn">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // --- Chatbot State ---
+        let conversationState = 0; // Tracks where we are in the conversation
+        const userDetails = {
+            cgpa: null,
+            course: '',
+            skills: ''
+        };
+        
+        const questions = [
+            "Hello! I'm here to help you with career recommendations. To start, what is your CGPA (e.g., 8.5)?",
+            "Great! Now, what is your course or major? (e.g., computer science, mechanical, electronics, AI&ML, civil)"
+        ];
+
+        // --- Functions ---
+
+        /**
+         * Appends a message to the chat window.
+         * @param {string} text - The message text.
+         * @param {string} sender - 'user' or 'bot'.
+         */
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+            messageDiv.textContent = text;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll to the latest message
+        }
+
+        /**
+         * Simulates bot thinking and sends a response.
+         * @param {string} text - The bot's message.
+         */
+        function botResponse(text) {
+            setTimeout(() => {
+                addMessage(text, 'bot');
+            }, 500); // Wait 0.5 seconds to feel more natural
+        }
+
+        /**
+         * Gets the relevant skills question based on the user's course.
+         * @param {string} course - The user's course.
+         * @returns {string} The skills question.
+         */
+        function getSkillsQuestion(course) {
+            const courseLower = course.toLowerCase();
+            let skillsExample = "";
+
+            if (courseLower.includes('computer science') || courseLower.includes('information technology')) {
+                skillsExample = "programming, animation, data analysis, UI/UX";
+            } else if (courseLower.includes('mechanical')) {
+                skillsExample = "CAD, robotics, thermal design, manufacturing";
+            } else if (courseLower.includes('electronics')) {
+                skillsExample = "embedded systems, VLSI, networking, signal processing";
+            } else if (courseLower.includes('ai') || courseLower.includes('ml')) {
+                skillsExample = "python, tensorflow, data science, NLP";
+            } else if (courseLower.includes('civil')) {
+                skillsExample = "structural design, AutoCAD, surveying, project management";
+            } else {
+                skillsExample = "python, design, marketing, data analysis"; // A generic default
+            }
+            
+            return Thanks. Finally, what are some of your skills or interests? (e.g., ${skillsExample});
+        }
+
+
+        /**
+         * Gets a career recommendation based on user details.
+         * This is a simple rule-based "AI" logic.
+         * @returns {string} The career recommendation.
+         */
+        function getRecommendation() {
+            const course = userDetails.course.toLowerCase();
+            const skills = userDetails.skills.toLowerCase();
+            
+            // --- Recommendation Logic ---
+            if (course.includes('computer science') || course.includes('information technology')) {
+                if (skills.includes('programming') || skills.includes('python') || skills.includes('java')) {
+                    return "Software Development Engineer (SDE). This is a strong path for programmers. Focus on data structures and algorithms to crack interviews at top companies.";
+                } else if (skills.includes('data expert') || skills.includes('data') || skills.includes('machine learning')) {
+                    return "Data Scientist or Analyst. Your interest in data is valuable in a field with high demand. Consider learning tools like SQL, Python libraries (Pandas, NumPy), and visualization tools.";
+                } else if (skills.includes('graphic designer') || skills.includes('designer') || skills.includes('ui/ux')) {
+                    return "UI/UX Designer. This role combines creativity with technology. Build a portfolio with your designs using tools like Figma or Adobe XD.";
+                } else if (skills.includes('animation') || skills.includes('vfx')) {
+                    return "3D Artist or Animator. A creative and exciting field. Focus on mastering software like Blender, Maya, or Cinema 4D.";
+                } else {
+                    return "A generalist role like a Technical Consultant or IT Support Specialist could be a great start. It's a good way to explore different areas of the tech industry.";
+                }
+            } else if (course.includes('mechanical')) {
+                if (skills.includes('design') || skills.includes('cad') || skills.includes('autocad')) {
+                    return "Design Engineer. Your skills in CAD software are highly valuable in manufacturing and product design.";
+                } else if (skills.includes('robotics') || skills.includes('automation')) {
+                    return "Robotics/Automation Engineer. This is a rapidly growing field with exciting opportunities.";
+                } else {
+                     return "Core Mechanical Engineer in the manufacturing or thermal engineering sector. Consider getting certified in a specific domain.";
+                }
+            } else if (course.includes('electronics')) {
+                if (skills.includes('embedded')) {
+                    return "Embedded Systems Engineer. A great field combining hardware and software. Focus on C/C++ and microcontroller programming.";
+                } else if (skills.includes('vlsi')) {
+                    return "VLSI Design Engineer. This is a core electronics role in chip design. Knowledge of Verilog/VHDL is key.";
+                } else if (skills.includes('network')) {
+                    return "Network Engineer. You'll be responsible for designing and managing communication networks. Cisco certifications (like CCNA) are valuable.";
+                } else {
+                    return "Electronics Engineer in a role like telecommunications or signal processing. Gaining practical experience with hardware kits is recommended.";
+                }
+            } else if (course.includes('ai') || course.includes('ml')) {
+                if (skills.includes('python') || skills.includes('tensorflow') || skills.includes('pytorch')) {
+                    return "Machine Learning Engineer. You'll build and deploy AI models. A strong portfolio of projects on GitHub is essential.";
+                } else if (skills.includes('data science') || skills.includes('nlp')) {
+                    return "Data Scientist specializing in Natural Language Processing (NLP). This is a very hot field right now. Focus on statistical modeling and large language models.";
+                } else {
+                    return "AI Research Assistant or Data Analyst. These roles are a great entry point into the AI/ML world. Focus on strengthening your math and programming fundamentals.";
+                }
+            } else if (course.includes('civil')) {
+                if (skills.includes('structural') || skills.includes('design')) {
+                    return "Structural Design Engineer. You will design buildings, bridges, and other structures. Proficiency in software like STAAD.Pro is crucial.";
+                } else if (skills.includes('autocad') || skills.includes('surveying')) {
+                    return "Civil Site Engineer or Surveyor. A hands-on role involving project execution and land surveying.";
+                } else if (skills.includes('project management')) {
+                    return "Construction Project Manager. This role combines technical knowledge with management skills. A PMP certification can be beneficial.";
+                } else {
+                    return "A role in Urban Planning or Environmental Engineering could be a good fit. These areas are growing in importance.";
+                }
+            } else if (course.includes('business') || course.includes('bba')) {
+                if (skills.includes('marketing') || skills.includes('seo')) {
+                    return "Digital Marketing Specialist. Focus on SEO/SEM and social media marketing to build a strong profile.";
+                } else if (skills.includes('finance') || skills.includes('investing')) {
+                    return "Financial Analyst. Your business background is a great foundation for a career in finance.";
+                } else if (skills.includes('hr') || skills.includes('human resources')) {
+                    return "Human Resources (HR) Generalist. A great role if you enjoy working with people and shaping company culture.";
+                } else {
+                    return "Business Development Associate or Management Trainee. These roles provide great exposure to how businesses operate.";
+                }
+            } else if (course.includes('biology') || course.includes('life science')) {
+                if (skills.includes('pharmacy') || skills.includes('pharmacist')) {
+                    return "Pharmacist or Pharmaceutical Researcher. This path requires further education but is stable and impactful.";
+                } else if (skills.includes('research') || skills.includes('genetics')) {
+                    return "Research Scientist or Genetic Counselor. A Master's or PhD is often required, but it's a very rewarding field.";
+                } else if (skills.includes('lab') || skills.includes('biotechnology')) {
+                    return "Biotechnologist or Laboratory Technician. These roles are crucial in medical and industrial research.";
+                } else {
+                    return "Healthcare Administrator or Medical Writer. These roles combine your scientific background with management or communication skills.";
+                }
+            } else {
+                return "Based on your inputs, a generalist role like a Project Coordinator or a Business Analyst could be a good fit. Exploring internships in different fields is highly recommended to find your passion.";
+            }
+        }
+        
+        /**
+         * Handles the main conversation flow.
+         * @param {string} input - The user's input text.
+         */
+        function handleConversation(input) {
+            switch (conversationState) {
+                case 0: // Asking for CGPA
+                    if (isNaN(parseFloat(input))) {
+                        botResponse("Please enter a valid number for your CGPA.");
+                        return;
+                    }
+                    userDetails.cgpa = parseFloat(input);
+
+                    if (userDetails.cgpa < 6.0) {
+                        // Low CGPA path
+                        botResponse("Your CGPA is one part of your story, but your skills and passion are just as important. Don't worry, be positive!");
+                        botResponse("Building a strong project portfolio and gaining practical experience through internships can make a huge difference. You could try roles like a Junior Developer, QA Tester, or a support role in your field to get started.");
+                        setTimeout(() => {
+                            botResponse("If you want to start over, just type 'reset'.");
+                        }, 1000);
+                        conversationState = 3; // Go to end state
+                    } else {
+                        // Good CGPA path
+                        conversationState++;
+                        botResponse(questions[conversationState]); // Ask for course
+                    }
+                    break;
+
+                case 1: // Asking for course
+                    userDetails.course = input;
+                    conversationState++;
+                    const skillsQuestion = getSkillsQuestion(userDetails.course); // Get dynamic question
+                    botResponse(skillsQuestion);
+                    break;
+
+                case 2: // Asking for skills
+                    userDetails.skills = input;
+                    
+                    botResponse("Thank you! Based on your profile, here is my recommendation:");
+                    const recommendation = getRecommendation();
+                    botResponse(recommendation);
+
+                    setTimeout(() => {
+                        botResponse("If you want to start over, just type 'reset'.");
+                    }, 1000);
+                    conversationState = 3; // End of conversation
+                    break;
+                
+                case 3: // Conversation ended
+                    if (input.toLowerCase().trim() === 'reset') {
+                        conversationState = 0;
+                        userDetails.cgpa = null;
+                        userDetails.course = '';
+                        userDetails.skills = '';
+                        botResponse(questions[0]);
+                    } else {
+                        botResponse("Our current session is complete. Please type 'reset' to begin a new recommendation.");
+                    }
+                    break;
+            }
+        }
+        
+        /**
+         * Handles the user sending a message.
+         */
+        function sendMessage() {
+            const userInputText = userInput.value.trim();
+            if (userInputText === '') return;
+
+            addMessage(userInputText, 'user');
+            userInput.value = '';
+
+            handleConversation(userInputText);
+        }
+
+        // --- Event Listeners ---
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // --- Initial Message ---
+        window.onload = () => {
+            botResponse(questions[0]);
+        };
+    </script>
+
+</body>
+</html>
