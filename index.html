@@ -25,8 +25,7 @@ th { background: #4CAF50; color: white; }
 <nav>
   <button onclick="showSection('addSection')">Add Student</button>
   <button onclick="showSection('viewSection')">View All</button>
-  <button onclick="showSection('branchSection')">Branch-wise</button>
-  <button onclick="showSection('yearSection')">Year/Sem-wise</button>
+  <button onclick="showSection('filterSection')">Branch + Year + Sem Filter</button>
 </nav>
 
 <!-- Add Student -->
@@ -81,10 +80,10 @@ th { background: #4CAF50; color: white; }
   </table>
 </div>
 
-<!-- Branch-wise -->
-<div id="branchSection" class="hidden">
-  <h2>Branch-wise View</h2>
-  <select id="branchFilter" onchange="filterByBranch()">
+<!-- Combined Filter -->
+<div id="filterSection" class="hidden">
+  <h2>Filter Students</h2>
+  <select id="branchFilter">
     <option value="">Select Branch</option>
     <option>Computer Science</option>
     <option>Civil</option>
@@ -92,20 +91,6 @@ th { background: #4CAF50; color: white; }
     <option>E&E</option>
     <option>EEE</option>
   </select>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
-        <th>Branch</th><th>Year</th><th>Sem</th>
-      </tr>
-    </thead>
-    <tbody id="branchList"></tbody>
-  </table>
-</div>
-
-<!-- Year & Sem-wise -->
-<div id="yearSection" class="hidden">
-  <h2>Year & Semester-wise View</h2>
   <select id="yearFilter">
     <option value="">Select Year</option>
     <option>1</option>
@@ -121,7 +106,8 @@ th { background: #4CAF50; color: white; }
     <option>5</option>
     <option>6</option>
   </select>
-  <button onclick="filterByYearSem()">Filter</button>
+  <button onclick="filterStudents()">Filter</button>
+  
   <table>
     <thead>
       <tr>
@@ -129,7 +115,7 @@ th { background: #4CAF50; color: white; }
         <th>Branch</th><th>Year</th><th>Sem</th>
       </tr>
     </thead>
-    <tbody id="yearList"></tbody>
+    <tbody id="filterList"></tbody>
   </table>
 </div>
 </div>
@@ -137,7 +123,7 @@ th { background: #4CAF50; color: white; }
 <script>
 function showSection(sectionId) {
   document.querySelectorAll('.container > div').forEach(div => {
-    if (div.id !== "" && div.id !== sectionId && div.tagName !== "NAV") {
+    if (div.id && div.tagName !== "NAV") {
       div.classList.add("hidden");
     }
   });
@@ -148,10 +134,10 @@ function showSection(sectionId) {
 function addStudent() {
   let student = {
     id: Date.now(),
-    name: document.getElementById("name").value,
-    age: document.getElementById("age").value,
-    email: document.getElementById("email").value,
-    phone: document.getElementById("phone").value,
+    name: document.getElementById("name").value.trim(),
+    age: document.getElementById("age").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
     branch: document.getElementById("branch").value,
     year: document.getElementById("year").value,
     sem: document.getElementById("sem").value
@@ -164,7 +150,8 @@ function addStudent() {
   students.push(student);
   localStorage.setItem("students", JSON.stringify(students));
   alert("Student Added!");
-  document.querySelectorAll("input, select").forEach(el => el.value = "");
+  document.querySelectorAll("#addSection input, #addSection select").forEach(el => el.value = "");
+  showSection('viewSection'); // Auto-switch to view
 }
 
 function loadStudents() {
@@ -192,31 +179,29 @@ function deleteStudent(id) {
   loadStudents();
 }
 
-function filterByBranch() {
+function filterStudents() {
   let branch = document.getElementById("branchFilter").value;
-  let students = JSON.parse(localStorage.getItem("students")) || [];
-  let filtered = students.filter(s => s.branch === branch);
-  let table = document.getElementById("branchList");
-  table.innerHTML = "";
-  filtered.forEach(s => {
-    table.innerHTML += `<tr>
-      <td>${s.name}</td><td>${s.age}</td><td>${s.email}</td>
-      <td>${s.phone}</td><td>${s.branch}</td><td>${s.year}</td><td>${s.sem}</td>
-    </tr>`;
-  });
-}
-
-function filterByYearSem() {
   let year = document.getElementById("yearFilter").value;
   let sem = document.getElementById("semFilter").value;
+  
   let students = JSON.parse(localStorage.getItem("students")) || [];
-  let filtered = students.filter(s => s.year === year && s.sem === sem);
-  let table = document.getElementById("yearList");
+  let filtered = students.filter(s => 
+    (branch ? s.branch === branch : true) &&
+    (year ? s.year === year : true) &&
+    (sem ? s.sem === sem : true)
+  );
+  
+  let table = document.getElementById("filterList");
   table.innerHTML = "";
   filtered.forEach(s => {
     table.innerHTML += `<tr>
-      <td>${s.name}</td><td>${s.age}</td><td>${s.email}</td>
-      <td>${s.phone}</td><td>${s.branch}</td><td>${s.year}</td><td>${s.sem}</td>
+      <td>${s.name}</td>
+      <td>${s.age}</td>
+      <td>${s.email}</td>
+      <td>${s.phone}</td>
+      <td>${s.branch}</td>
+      <td>${s.year}</td>
+      <td>${s.sem}</td>
     </tr>`;
   });
 }
