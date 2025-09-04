@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Profile Manager</title>
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f9; }
-.container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-nav button { margin-right: 10px; padding: 8px 15px; border: none; background: #4CAF50; color: white; cursor: pointer; border-radius: 5px; }
+body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 20px; }
+.container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+h1 { text-align: center; }
+nav button { margin: 5px; padding: 8px 15px; border: none; background: #4CAF50; color: white; border-radius: 5px; cursor: pointer; }
 nav button:hover { background: #45a049; }
 input, select, button { padding: 8px; margin: 5px 0; width: 100%; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -16,6 +17,8 @@ th { background: #4CAF50; color: white; }
 .delete-btn { background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; }
 .delete-btn:hover { background: darkred; }
 .hidden { display: none; }
+.print-btn { background: #2196F3; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+.print-btn:hover { background: #1976D2; }
 </style>
 </head>
 <body>
@@ -24,11 +27,11 @@ th { background: #4CAF50; color: white; }
 <h1>Student Profile Manager</h1>
 <nav>
   <button onclick="showSection('addSection')">Add Student</button>
-  <button onclick="showSection('viewSection')">View All</button>
-  <button onclick="showSection('filterSection')">Branch + Year + Sem Filter</button>
+  <button onclick="showSection('viewSection')">View Students</button>
+  <button onclick="showSection('filterSection')">Filter Students</button>
 </nav>
 
-<!-- Add Student -->
+<!-- Add Student Section -->
 <div id="addSection">
   <h2>Add Student</h2>
   <input type="text" id="name" placeholder="Name">
@@ -65,11 +68,11 @@ th { background: #4CAF50; color: white; }
   <button onclick="addStudent()">Add Student</button>
 </div>
 
-<!-- View All Students -->
+<!-- View Students Section -->
 <div id="viewSection" class="hidden">
   <h2>All Students</h2>
-  <button onclick="window.print()">Print</button>
-  <table>
+  <button class="print-btn" onclick="printTable()">Print Students</button>
+  <table id="studentTable">
     <thead>
       <tr>
         <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
@@ -80,7 +83,7 @@ th { background: #4CAF50; color: white; }
   </table>
 </div>
 
-<!-- Combined Filter -->
+<!-- Filter Students Section -->
 <div id="filterSection" class="hidden">
   <h2>Filter Students</h2>
   <select id="branchFilter">
@@ -149,9 +152,8 @@ function addStudent() {
   let students = JSON.parse(localStorage.getItem("students")) || [];
   students.push(student);
   localStorage.setItem("students", JSON.stringify(students));
-  alert("Student Added!");
+  alert("Student Added Successfully!");
   document.querySelectorAll("#addSection input, #addSection select").forEach(el => el.value = "");
-  showSection('viewSection'); // Auto-switch to view
 }
 
 function loadStudents() {
@@ -204,6 +206,16 @@ function filterStudents() {
       <td>${s.sem}</td>
     </tr>`;
   });
+}
+
+function printTable() {
+  let divToPrint = document.getElementById("studentTable");
+  let newWin = window.open("");
+  newWin.document.write("<html><head><title>Print</title></head><body>");
+  newWin.document.write(divToPrint.outerHTML);
+  newWin.document.write("</body></html>");
+  newWin.print();
+  newWin.close();
 }
 </script>
 
