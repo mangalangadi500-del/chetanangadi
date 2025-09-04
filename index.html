@@ -1,88 +1,459 @@
-from flask import Flask, render_template, request, jsonify
-import sqlite3
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Student Profile Viewer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#fff; --accent:#2b6cb0; --muted:#666;
+    }
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial; margin:16px; background:var(--bg); color:#111;}
+    .container{max-width:1100px;margin:0 auto;}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    h1{font-size:20px;margin:0;}
+    .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(25,30,40,0.06);margin-bottom:14px;}
+    form .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px;}
+    input, select, textarea{width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;font-size:14px;box-sizing:border-box;}
+    button{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
+    button.secondary{background:#e2e8f0;color:#111;}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;}
+    .table-wrap{overflow:auto;}
+    table{width:100%;border-collapse:collapse;font-size:14px;}
+    th,td{padding:8px 10px;border-bottom:1px solid #f0f3f7;text-align:left;vertical-align:middle;}
+    th{background:#fafbfd;font-weight:600;font-size:13px;}
+    .small{font-size:12px;color:var(--muted);}
+    .btn-delete{background:#ef4444;padding:6px 8px;border-radius:6px;color:#fff;border:none;cursor:pointer;}
+    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+    .muted{color:var(--muted);font-size:13px;}
+    @media (max-width:640px){
+      header{flex-direction:column;align-items:flex-start;gap:8px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Student Profile Viewer</h1>
+      <div class="actions">
+        <button id="btnPrint">Print</button>
+        <button id="btnExport" class="secondary">Export CSV</button>
+        <button id="btnClearAll" class="secondary" title="Clear all saved students (irreversible)">Clear All</button>
+      </div>
+    </header>
 
-app = Flask(__name__)
+    <!-- Add Student Form -->
+    <section class="card" aria-labelledby="add-title">
+      <h2 id="add-title" style="margin:0 0 10px 0;font-size:16px;">Add Student</h2>
+      <form id="studentForm">
+        <div class="grid">
+          <div>
+            <label for="name">Name *</label>
+            <input id="name" required />
+          </div>
+          <div>
+            <label for="roll">Roll No *</label>
+            <input id="roll" required />
+          </div>
+          <div>
+            <label for="branch">Branch *</label>
+            <select id="branch" required>
+              <option value="">--Select Branch--</option>
+              <option>Computer Science</option>
+              <option>Electronics</option>
+              <option>Mechanical</option>
+              <option>Civil</option>
+              <option>Information Technology</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label for="year">Year *</label>
+            <select id="year" required>
+              <option value="">--Select Year--</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+            </select>
+          </div>
+          <div>
+            <label for="sem">Semester *</label>
+            <select id="sem" required>
+              <option value="">--Select Semester--</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+            </select>
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" type="email" />
+          </div>
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" pattern="[0-9+ ]*" />
+          </div>
+          <div style="grid-column:1 / -1;">
+            <label for="address">Address</label>
+            <textarea id="address" rows="2"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button type="submit">Add Student</button>
+          <button type="reset" class="secondary">Reset</button>
+        </div>
+      </form>
+      <p class="muted" style="margin-top:8px;">Tip: Data is stored locally in your browser (localStorage). It persists between visits on the same browser.</p>
+    </section>
 
-# Create table if not exists
-def init_db():
-    conn = sqlite3.connect("students.db")
-    c = conn.cursor()
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS students (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            year INTEGER,
-            semester INTEGER,
-            branch TEXT,
-            email TEXT,
-            phone TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+    <!-- Filters & View -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div class="controls">
+          <div class="filters">
+            <label class="small">Branch:</label>
+            <select id="filterBranch">
+              <option value="">All</option>
+            </select>
+            <label class="small">Year:</label>
+            <select id="filterYear">
+              <option value="">All</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+            </select>
+            <label class="small">Semester:</label>
+            <select id="filterSem">
+              <option value="">All</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+            </select>
+            <button id="btnApplyFilter" class="secondary">Apply</button>
+            <button id="btnClearFilter" class="secondary">Clear</button>
+          </div>
+        </div>
 
-init_db()
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="searchText" placeholder="Search name or roll..." />
+          <button id="btnSearch" class="secondary">Search</button>
+          <span id="count" class="small muted"></span>
+        </div>
+      </div>
 
-# Home page
-@app.route("/")
-def index():
-    return render_template("index.html")
+      <div class="table-wrap">
+        <table id="studentsTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Roll No</th>
+              <th>Branch</th>
+              <th>Year</th>
+              <th>Sem</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- rows inserted by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 
-# Add student
-@app.route("/add_student", methods=["POST"])
-def add_student():
-    data = request.get_json()
-    conn = sqlite3.connect("students.db")
-    c = conn.cursor()
-    c.execute("INSERT INTO students (name, year, semester, branch, email, phone) VALUES (?, ?, ?, ?, ?, ?)",
-              (data["name"], data["year"], data["semester"], data["branch"], data["email"], data["phone"]))
-    conn.commit()
-    conn.close()
-    return jsonify({"message": "Student added successfully"})
+  <script>
+    // Storage key
+    const STORAGE_KEY = 'student_profiles_v1';
 
-# Get all students
-@app.route("/get_students")
-def get_students():
-    conn = sqlite3.connect("students.db")
-    c = conn.cursor()
-    c.execute("SELECT * FROM students")
-    students = c.fetchall()
-    conn.close()
-    return jsonify(students)
+    // DOM refs
+    const studentForm = document.getElementById('studentForm');
+    const nameInput = document.getElementById('name');
+    const rollInput = document.getElementById('roll');
+    const branchInput = document.getElementById('branch');
+    const yearInput = document.getElementById('year');
+    const semInput = document.getElementById('sem');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const addressInput = document.getElementById('address');
 
-# Get filtered students
-@app.route("/get_students_filtered")
-def get_students_filtered():
-    branch = request.args.get("branch", "")
-    semester = request.args.get("semester", "")
+    const tableBody = document.querySelector('#studentsTable tbody');
+    const countSpan = document.getElementById('count');
 
-    conn = sqlite3.connect("students.db")
-    c = conn.cursor()
+    const filterBranch = document.getElementById('filterBranch');
+    const filterYear = document.getElementById('filterYear');
+    const filterSem = document.getElementById('filterSem');
+    const btnApplyFilter = document.getElementById('btnApplyFilter');
+    const btnClearFilter = document.getElementById('btnClearFilter');
+    const searchText = document.getElementById('searchText');
+    const btnSearch = document.getElementById('btnSearch');
+    const btnPrint = document.getElementById('btnPrint');
+    const btnExport = document.getElementById('btnExport');
+    const btnClearAll = document.getElementById('btnClearAll');
 
-    query = "SELECT * FROM students WHERE 1=1"
-    params = []
+    // In-memory list
+    let students = [];
 
-    if branch:
-        query += " AND branch = ?"
-        params.append(branch)
-    if semester:
-        query += " AND semester = ?"
-        params.append(semester)
+    // ---- Initialization ----
+    function loadStudents(){
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        students = raw ? JSON.parse(raw) : [];
+      } catch(e){
+        console.error('Failed to read from localStorage', e);
+        students = [];
+      }
+    }
 
-    c.execute(query, params)
-    students = c.fetchall()
-    conn.close()
-    return jsonify(students)
+    function saveStudents(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
+      refreshBranchFilterOptions();
+    }
 
-# Delete student
-@app.route("/delete_student/<int:id>", methods=["DELETE"])
-def delete_student(id):
-    conn = sqlite3.connect("students.db")
-    c = conn.cursor()
-    c.execute("DELETE FROM students WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
-    return jsonify({"message": "Student deleted successfully"})
+    function generateId(){
+      return 's' + Date.now() + Math.floor(Math.random()*999);
+    }
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    // ---- Render ----
+    function renderTable(list = students){
+      tableBody.innerHTML = '';
+      if(!list.length){
+        tableBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--muted)">No students found.</td></tr>';
+        countSpan.textContent = '';
+        return;
+      }
+
+      list.forEach((st, idx) => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td>${idx+1}</td>
+          <td>${escapeHtml(st.name)}</td>
+          <td>${escapeHtml(st.roll)}</td>
+          <td>${escapeHtml(st.branch)}</td>
+          <td>${escapeHtml(st.year)}</td>
+          <td>${escapeHtml(st.sem)}</td>
+          <td>${escapeHtml(st.email||'')}</td>
+          <td>${escapeHtml(st.phone||'')}</td>
+          <td>${escapeHtml(st.address||'')}</td>
+          <td>
+            <button class="btn-delete" data-id="${st.id}" title="Delete">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      countSpan.textContent = `${list.length} student(s)`;
+    }
+
+    // Escape to avoid HTML injection in table
+    function escapeHtml(text){
+      if(text == null) return '';
+      return String(text)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+
+    // ---- CRUD ops ----
+    function addStudent(ev){
+      ev.preventDefault();
+      const name = nameInput.value.trim();
+      const roll = rollInput.value.trim();
+      const branch = branchInput.value;
+      const year = yearInput.value;
+      const sem = semInput.value;
+
+      if(!name || !roll || !branch || !year || !sem){
+        alert('Please fill required fields (Name, Roll, Branch, Year, Semester).');
+        return;
+      }
+
+      // Prevent duplicate roll
+      const exists = students.some(s => s.roll.toLowerCase() === roll.toLowerCase());
+      if(exists){
+        if(!confirm('A student with this Roll No already exists. Add duplicate?')) return;
+      }
+
+      const student = {
+        id: generateId(),
+        name, roll, branch, year, sem,
+        email: emailInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        address: addressInput.value.trim(),
+        createdAt: new Date().toISOString()
+      };
+
+      students.push(student);
+      saveStudents();
+      renderTable(applyCurrentFilters());
+      studentForm.reset();
+      nameInput.focus();
+    }
+
+    function deleteStudent(id){
+      if(!confirm('Delete this student?')) return;
+      students = students.filter(s => s.id !== id);
+      saveStudents();
+      renderTable(applyCurrentFilters());
+    }
+
+    // ---- Filters / Search ----
+    function applyCurrentFilters(){
+      let list = [...students];
+      const b = filterBranch.value;
+      const y = filterYear.value;
+      const s = filterSem.value;
+      const q = searchText.value.trim().toLowerCase();
+
+      if(b) list = list.filter(x => x.branch === b);
+      if(y) list = list.filter(x => x.year === y);
+      if(s) list = list.filter(x => x.sem === s);
+      if(q){
+        list = list.filter(x => (x.name||'').toLowerCase().includes(q) || (x.roll||'').toLowerCase().includes(q));
+      }
+      return list;
+    }
+
+    function applyFiltersAndRender(){
+      renderTable(applyCurrentFilters());
+    }
+
+    // ---- Utility: fill branch filter with existing branches ----
+    function refreshBranchFilterOptions(){
+      // collect unique branches from students
+      const branches = Array.from(new Set(students.map(s => s.branch).filter(Boolean))).sort();
+      // keep current selected
+      const current = filterBranch.value;
+      filterBranch.innerHTML = '<option value="">All</option>';
+      branches.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.textContent = b;
+        filterBranch.appendChild(opt);
+      });
+      // also update branch select in add form if "Other" present not necessary
+      if(current) filterBranch.value = current;
+    }
+
+    // ---- Export CSV & Print ----
+    function exportCSV(){
+      const rows = applyCurrentFilters();
+      if(!rows.length){ alert('No students to export.'); return; }
+
+      const header = ['Name','Roll No','Branch','Year','Semester','Email','Phone','Address','Created At'];
+      const csv = [
+        header.join(','),
+        ...rows.map(r => [
+          csvSafe(r.name), csvSafe(r.roll), csvSafe(r.branch), csvSafe(r.year), csvSafe(r.sem),
+          csvSafe(r.email), csvSafe(r.phone), csvSafe(r.address), csvSafe(r.createdAt)
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `students_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function csvSafe(val){
+      if(val == null) return '';
+      const v = String(val).replace(/"/g, '""');
+      return `"${v}"`;
+    }
+
+    function printPage(){
+      // Optionally we can open a print-only window with just the table
+      const rows = applyCurrentFilters();
+      const style = `
+        <style>
+          body{font-family:Arial,Helvetica,sans-serif;margin:20px;}
+          table{border-collapse:collapse;width:100%}
+          th,td{border:1px solid #ccc;padding:6px;text-align:left;font-size:12px}
+          th{background:#f6f6f6}
+        </style>
+      `;
+      let html = `<h2>Student List (${rows.length})</h2>`;
+      html += '<table><thead><tr><th>#</th><th>Name</th><th>Roll</th><th>Branch</th><th>Year</th><th>Sem</th><th>Email</th><th>Phone</th><th>Address</th></tr></thead><tbody>';
+      rows.forEach((r,i)=>{
+        html += `<tr>
+          <td>${i+1}</td>
+          <td>${escapeHtml(r.name)}</td>
+          <td>${escapeHtml(r.roll)}</td>
+          <td>${escapeHtml(r.branch)}</td>
+          <td>${escapeHtml(r.year)}</td>
+          <td>${escapeHtml(r.sem)}</td>
+          <td>${escapeHtml(r.email)}</td>
+          <td>${escapeHtml(r.phone)}</td>
+          <td>${escapeHtml(r.address)}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+
+      const win = window.open('', '_blank');
+      win.document.write(`<html><head><title>Print - Students</title>${style}</head><body>${html}</body></html>`);
+      win.document.close();
+      win.focus();
+      setTimeout(()=> win.print(), 250);
+    }
+
+    // ---- Clear all storage ----
+    function clearAll(){
+      if(!confirm('Clear all saved students permanently?')) return;
+      students = [];
+      saveStudents();
+      renderTable();
+    }
+
+    // ---- helper: event delegation for delete buttons ----
+    tableBody.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-id]');
+      if(!btn) return;
+      const id = btn.dataset.id;
+      deleteStudent(id);
+    });
+
+    // ---- init listeners ----
+    studentForm.addEventListener('submit', addStudent);
+    btnApplyFilter.addEventListener('click', applyFiltersAndRender);
+    btnClearFilter.addEventListener('click', () => {
+      filterBranch.value = '';
+      filterYear.value = '';
+      filterSem.value = '';
+      searchText.value = '';
+      renderTable();
+    });
+    btnSearch.addEventListener('click', applyFiltersAndRender);
+    searchText.addEventListener('keyup', (e) => {
+      if(e.key === 'Enter') applyFiltersAndRender();
+    });
+
+    btnExport.addEventListener('click', exportCSV);
+    btnPrint.addEventListener('click', printPage);
+    btnClearAll.addEventListener('click', clearAll);
+
+    // ---- startup ----
+    loadStudents();
+    refreshBranchFilterOptions();
+    renderTable();
+
+    // ---- small polyfills / safety for older browsers ----
+    if(!String.prototype.replaceAll){
+      String.prototype.replaceAll = function(search, replace){
+        return this.split(search).join(replace);
+      };
+    }
+
+    // The end
+  </script>
+</body>
+</html>
