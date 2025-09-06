@@ -8,6 +8,7 @@
 body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 20px; }
 .container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 h1 { text-align: center; }
+nav { text-align:center; margin-bottom: 15px; }
 nav button { margin: 5px; padding: 8px 15px; border: none; background: #4CAF50; color: white; border-radius: 5px; cursor: pointer; }
 nav button:hover { background: #45a049; }
 input, select, button { padding: 8px; margin: 5px 0; width: 100%; }
@@ -25,6 +26,7 @@ th { background: #4CAF50; color: white; }
 
 <div class="container">
 <h1>Student Profile Manager</h1>
+
 <nav>
   <button onclick="showSection('addSection')">Add Student</button>
   <button onclick="showSection('viewSection')">View Students</button>
@@ -32,7 +34,7 @@ th { background: #4CAF50; color: white; }
 </nav>
 
 <!-- Add Student Section -->
-<div id="addSection">
+<div id="addSection" class="section">
   <h2>Add Student</h2>
   <input type="text" id="name" placeholder="Name">
   <input type="number" id="age" placeholder="Age">
@@ -69,7 +71,7 @@ th { background: #4CAF50; color: white; }
 </div>
 
 <!-- View Students Section -->
-<div id="viewSection" class="hidden">
+<div id="viewSection" class="section hidden">
   <h2>All Students</h2>
   <button class="print-btn" onclick="printTable()">Print Students</button>
   <table id="studentTable">
@@ -84,7 +86,7 @@ th { background: #4CAF50; color: white; }
 </div>
 
 <!-- View Students Branch Wise Section -->
-<div id="filterSection" class="hidden">
+<div id="filterSection" class="section hidden">
   <h2>View Students Branch Wise</h2>
   <select id="branchFilter">
     <option value="">Select Branch</option>
@@ -110,8 +112,9 @@ th { background: #4CAF50; color: white; }
     <option>6</option>
   </select>
   <button onclick="filterStudents()">Filter</button>
+  <button class="print-btn" onclick="printFiltered()">Print Branch Wise</button>
   
-  <table>
+  <table id="filterTable">
     <thead>
       <tr>
         <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
@@ -125,11 +128,7 @@ th { background: #4CAF50; color: white; }
 
 <script>
 function showSection(sectionId) {
-  document.querySelectorAll('.container > div').forEach(div => {
-    if (div.id && div.tagName !== "NAV") {
-      div.classList.add("hidden");
-    }
-  });
+  document.querySelectorAll('.section').forEach(sec => sec.classList.add("hidden"));
   document.getElementById(sectionId).classList.remove("hidden");
   if (sectionId === 'viewSection') loadStudents();
 }
@@ -210,6 +209,16 @@ function filterStudents() {
 
 function printTable() {
   let divToPrint = document.getElementById("studentTable");
+  let newWin = window.open("");
+  newWin.document.write("<html><head><title>Print</title></head><body>");
+  newWin.document.write(divToPrint.outerHTML);
+  newWin.document.write("</body></html>");
+  newWin.print();
+  newWin.close();
+}
+
+function printFiltered() {
+  let divToPrint = document.getElementById("filterTable");
   let newWin = window.open("");
   newWin.document.write("<html><head><title>Print</title></head><body>");
   newWin.document.write(divToPrint.outerHTML);
