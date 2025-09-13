@@ -1,232 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Profile Manager</title>
-<style>
-body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 20px; }
-.container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-h1 { text-align: center; }
-nav { text-align:center; margin-bottom: 15px; }
-nav button { margin: 5px; padding: 8px 15px; border: none; background: #4CAF50; color: white; border-radius: 5px; cursor: pointer; }
-nav button:hover { background: #45a049; }
-input, select, button { padding: 8px; margin: 5px 0; width: 100%; }
-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-th { background: #4CAF50; color: white; }
-.delete-btn { background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; }
-.delete-btn:hover { background: darkred; }
-.hidden { display: none; }
-.print-btn { background: #2196F3; color: white; border: none; padding: 5px 10px; cursor: pointer; }
-.print-btn:hover { background: #1976D2; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Recommendation Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chat-container {
+      width: 400px;
+      max-width: 90%;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-header {
+      background: #2b6cb0;
+      color: white;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .chat-box {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+    .message {
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .bot {
+      background: #e6f0ff;
+      align-self: flex-start;
+    }
+    .user {
+      background: #2b6cb0;
+      color: white;
+      align-self: flex-end;
+    }
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+    }
+    .chat-input button {
+      background: #2b6cb0;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      cursor: pointer;
+    }
+    .chat-input button:hover {
+      background: #1e4e8c;
+    }
+  </style>
 </head>
 <body>
+  <div class="chat-container">
+    <div class="chat-header">Student Recommendation Chatbot</div>
+    <div class="chat-box" id="chat-box"></div>
+    <div class="chat-input">
+      <input type="text" id="user-input" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
 
-<div class="container">
-<h1>Student Profile Manager</h1>
+  <script>
+    const chatBox = document.getElementById("chat-box");
+    const input = document.getElementById("user-input");
 
-<nav>
-  <button onclick="showSection('addSection')">Add Student</button>
-  <button onclick="showSection('viewSection')">View Students</button>
-  <button onclick="showSection('filterSection')">View Branch Wise</button>
-</nav>
+    // Simple knowledge base
+    const responses = {
+      "hello": "Hi! I'm your Student Recommendation Bot. Tell me about your interests or strengths.",
+      "science": "Great! You may enjoy careers in Engineering, Medicine, or Research.",
+      "math": "Nice choice! You could explore Data Science, Engineering, or Actuarial Science.",
+      "arts": "Wonderful! You might like careers in Design, Literature, or Media.",
+      "commerce": "Good option! You can pursue Finance, Business, or Economics.",
+      "sports": "Awesome! You can consider Sports Science, Physical Education, or Coaching.",
+      "computer": "Excellent! You might explore Computer Science, Software Development, or AI.",
+      "bye": "Goodbye! Best wishes for your future."
+    };
 
-<!-- Add Student Section -->
-<div id="addSection" class="section">
-  <h2>Add Student</h2>
-  <input type="text" id="name" placeholder="Name">
-  <input type="number" id="age" placeholder="Age">
-  <input type="email" id="email" placeholder="Email">
-  <input type="text" id="phone" placeholder="Phone">
-  
-  <select id="branch">
-    <option value="">Select Branch</option>
-    <option>Computer Science</option>
-    <option>Civil</option>
-    <option>Mechanical</option>
-    <option>E&E</option>
-    <option>EEE</option>
-  </select>
-  
-  <select id="year">
-    <option value="">Select Year</option>
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-  </select>
-  
-  <select id="sem">
-    <option value="">Select Semester</option>
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-  </select>
-  
-  <button onclick="addStudent()">Add Student</button>
-</div>
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
-<!-- View Students Section -->
-<div id="viewSection" class="section hidden">
-  <h2>All Students</h2>
-  <button class="print-btn" onclick="printTable()">Print Students</button>
-  <table id="studentTable">
-    <thead>
-      <tr>
-        <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
-        <th>Branch</th><th>Year</th><th>Sem</th><th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="studentList"></tbody>
-  </table>
-</div>
+    function sendMessage() {
+      const userText = input.value.trim();
+      if (!userText) return;
+      addMessage(userText, "user");
+      input.value = "";
 
-<!-- View Students Branch Wise Section -->
-<div id="filterSection" class="section hidden">
-  <h2>View Students Branch Wise</h2>
-  <select id="branchFilter">
-    <option value="">Select Branch</option>
-    <option>Computer Science</option>
-    <option>Civil</option>
-    <option>Mechanical</option>
-    <option>E&E</option>
-    <option>EEE</option>
-  </select>
-  <select id="yearFilter">
-    <option value="">Select Year</option>
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-  </select>
-  <select id="semFilter">
-    <option value="">Select Semester</option>
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-  </select>
-  <button onclick="filterStudents()">Filter</button>
-  <button class="print-btn" onclick="printFiltered()">Print Branch Wise</button>
-  
-  <table id="filterTable">
-    <thead>
-      <tr>
-        <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
-        <th>Branch</th><th>Year</th><th>Sem</th>
-      </tr>
-    </thead>
-    <tbody id="filterList"></tbody>
-  </table>
-</div>
-</div>
-
-<script>
-function showSection(sectionId) {
-  document.querySelectorAll('.section').forEach(sec => sec.classList.add("hidden"));
-  document.getElementById(sectionId).classList.remove("hidden");
-  if (sectionId === 'viewSection') loadStudents();
-}
-
-function addStudent() {
-  let student = {
-    id: Date.now(),
-    name: document.getElementById("name").value.trim(),
-    age: document.getElementById("age").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    branch: document.getElementById("branch").value,
-    year: document.getElementById("year").value,
-    sem: document.getElementById("sem").value
-  };
-  if (!student.name || !student.age || !student.email || !student.phone || !student.branch || !student.year || !student.sem) {
-    alert("Please fill all fields");
-    return;
-  }
-  let students = JSON.parse(localStorage.getItem("students")) || [];
-  students.push(student);
-  localStorage.setItem("students", JSON.stringify(students));
-  alert("Student Added Successfully!");
-  document.querySelectorAll("#addSection input, #addSection select").forEach(el => el.value = "");
-}
-
-function loadStudents() {
-  let students = JSON.parse(localStorage.getItem("students")) || [];
-  let table = document.getElementById("studentList");
-  table.innerHTML = "";
-  students.forEach(s => {
-    table.innerHTML += `<tr>
-      <td>${s.name}</td>
-      <td>${s.age}</td>
-      <td>${s.email}</td>
-      <td>${s.phone}</td>
-      <td>${s.branch}</td>
-      <td>${s.year}</td>
-      <td>${s.sem}</td>
-      <td><button class="delete-btn" onclick="deleteStudent(${s.id})">Delete</button></td>
-    </tr>`;
-  });
-}
-
-function deleteStudent(id) {
-  let students = JSON.parse(localStorage.getItem("students")) || [];
-  students = students.filter(s => s.id !== id);
-  localStorage.setItem("students", JSON.stringify(students));
-  loadStudents();
-}
-
-function filterStudents() {
-  let branch = document.getElementById("branchFilter").value;
-  let year = document.getElementById("yearFilter").value;
-  let sem = document.getElementById("semFilter").value;
-  
-  let students = JSON.parse(localStorage.getItem("students")) || [];
-  let filtered = students.filter(s => 
-    (branch ? s.branch === branch : true) &&
-    (year ? s.year === year : true) &&
-    (sem ? s.sem === sem : true)
-  );
-  
-  let table = document.getElementById("filterList");
-  table.innerHTML = "";
-  filtered.forEach(s => {
-    table.innerHTML += `<tr>
-      <td>${s.name}</td>
-      <td>${s.age}</td>
-      <td>${s.email}</td>
-      <td>${s.phone}</td>
-      <td>${s.branch}</td>
-      <td>${s.year}</td>
-      <td>${s.sem}</td>
-    </tr>`;
-  });
-}
-
-function printTable() {
-  let divToPrint = document.getElementById("studentTable");
-  let newWin = window.open("");
-  newWin.document.write("<html><head><title>Print</title></head><body>");
-  newWin.document.write(divToPrint.outerHTML);
-  newWin.document.write("</body></html>");
-  newWin.print();
-  newWin.close();
-}
-
-function printFiltered() {
-  let divToPrint = document.getElementById("filterTable");
-  let newWin = window.open("");
-  newWin.document.write("<html><head><title>Print</title></head><body>");
-  newWin.document.write(divToPrint.outerHTML);
-  newWin.document.write("</body></html>");
-  newWin.print();
-  newWin.close();
-}
-</script>
-
+      // Simple matching
+      let reply = "Sorry, I didn’t understand. Can you tell me your interest (e.g., science, math, arts, commerce, computer, sports)?";
+      for (let key in responses) {
+        if (userText.toLowerCase().includes(key)) {
+          reply = responses[key];
+          break;
+        }
+      }
+      setTimeout(() => addMessage(reply, "bot"), 500);
+    }
+  </script>
 </body>
 </html>
