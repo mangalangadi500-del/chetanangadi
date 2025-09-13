@@ -1,130 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Recommendation Chatbot</title>
+  <meta charset="UTF-8">
+  <title>CS Movie - Kannada Only</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f7fb;
+      background: #f4f6f9;
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
     }
-    .chat-container {
-      width: 400px;
-      max-width: 90%;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .chat-header {
-      background: #2b6cb0;
-      color: white;
-      padding: 15px;
-      font-size: 18px;
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
       font-weight: bold;
     }
-    .chat-box {
-      flex: 1;
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 20px auto;
+    }
+    .upload-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+      margin-bottom: 20px;
+    }
+    .upload-box h2 {
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+    .upload-box input, .upload-box button {
+      display: block;
+      width: 100%;
       padding: 10px;
-      overflow-y: auto;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
       font-size: 14px;
     }
-    .message {
-      margin: 8px 0;
-      padding: 8px 12px;
-      border-radius: 8px;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-    .bot {
-      background: #e6f0ff;
-      align-self: flex-start;
-    }
-    .user {
-      background: #2b6cb0;
-      color: white;
-      align-self: flex-end;
-    }
-    .chat-input {
-      display: flex;
-      border-top: 1px solid #ddd;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      outline: none;
-    }
-    .chat-input button {
-      background: #2b6cb0;
+    .upload-box button {
+      background: #2980b9;
       color: white;
       border: none;
-      padding: 0 20px;
+      font-size: 16px;
       cursor: pointer;
     }
-    .chat-input button:hover {
-      background: #1e4e8c;
+    .upload-box button:hover {
+      background: #1f5f8c;
+    }
+    .movie-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .movie {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+      padding: 15px;
+    }
+    .movie h3 {
+      margin: 0 0 10px;
+      color: #2c3e50;
+    }
+    .movie p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: #555;
+    }
+    video {
+      width: 100%;
+      border-radius: 8px;
+      outline: none;
     }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">Student Recommendation Chatbot</div>
-    <div class="chat-box" id="chat-box"></div>
-    <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
+  <header>🎬 CS Movie - Kannada Only</header>
+  <div class="container">
+
+    <!-- Upload Section -->
+    <div class="upload-box">
+      <h2>Upload a Kannada Movie</h2>
+      <input type="text" id="title" placeholder="Movie Title">
+      <input type="text" id="desc" placeholder="Description">
+      <input type="text" id="url" placeholder="Movie Video URL (mp4)">
+      <button onclick="uploadMovie()">Upload Movie</button>
+    </div>
+
+    <!-- Movie List -->
+    <div id="movies" class="movie-list">
+      <!-- Default Kannada movies -->
+      <div class="movie">
+        <h3>Sample Kannada Movie 1</h3>
+        <p>A demo Kannada movie trailer.</p>
+        <video controls>
+          <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="movie">
+        <h3>Sample Kannada Movie 2</h3>
+        <p>Another demo Kannada movie trailer.</p>
+        <video controls>
+          <source src="https://www.w3schools.com/html/movie.mp4" type="video/mp4">
+        </video>
+      </div>
     </div>
   </div>
 
   <script>
-    const chatBox = document.getElementById("chat-box");
-    const input = document.getElementById("user-input");
+    function uploadMovie() {
+      let title = document.getElementById("title").value;
+      let desc = document.getElementById("desc").value;
+      let url = document.getElementById("url").value;
 
-    // Simple knowledge base
-    const responses = {
-      "hello": "Hi! I'm your Student Recommendation Bot. Tell me about your interests or strengths.",
-      "science": "Great! You may enjoy careers in Engineering, Medicine, or Research.",
-      "math": "Nice choice! You could explore Data Science, Engineering, or Actuarial Science.",
-      "arts": "Wonderful! You might like careers in Design, Literature, or Media.",
-      "commerce": "Good option! You can pursue Finance, Business, or Economics.",
-      "sports": "Awesome! You can consider Sports Science, Physical Education, or Coaching.",
-      "computer": "Excellent! You might explore Computer Science, Software Development, or AI.",
-      "bye": "Goodbye! Best wishes for your future."
-    };
+      if (title && url) {
+        let movieDiv = document.createElement("div");
+        movieDiv.classList.add("movie");
 
-    function addMessage(text, sender) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender);
-      msg.textContent = text;
-      chatBox.appendChild(msg);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
+        movieDiv.innerHTML = `
+          <h3>${title}</h3>
+          <p>${desc}</p>
+          <video controls>
+            <source src="${url}" type="video/mp4">
+          </video>
+        `;
 
-    function sendMessage() {
-      const userText = input.value.trim();
-      if (!userText) return;
-      addMessage(userText, "user");
-      input.value = "";
+        document.getElementById("movies").appendChild(movieDiv);
 
-      // Simple matching
-      let reply = "Sorry, I didn’t understand. Can you tell me your interest (e.g., science, math, arts, commerce, computer, sports)?";
-      for (let key in responses) {
-        if (userText.toLowerCase().includes(key)) {
-          reply = responses[key];
-          break;
-        }
+        // Clear input fields
+        document.getElementById("title").value = "";
+        document.getElementById("desc").value = "";
+        document.getElementById("url").value = "";
+      } else {
+        alert("Please enter at least a title and video URL.");
       }
-      setTimeout(() => addMessage(reply, "bot"), 500);
     }
   </script>
 </body>
