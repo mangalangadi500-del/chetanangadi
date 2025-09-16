@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSPT Canteen - Login</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(135deg,#4CAF50,#2E7D32);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+    }
+    .login-box {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 300px;
+    }
+    .login-box h1 {
+      margin-bottom: 20px;
+      color: #4CAF50;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #388E3C;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>SSPT Canteen 🍴</h1>
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <script>
+    function login() {
+      let u = document.getElementById("username").value.trim();
+      let p = document.getElementById("password").value.trim();
+      if(u && p){
+        localStorage.setItem("canteenUser", u);
+        window.location.href = "menu.html";
+      } else {
+        alert("⚠️ Please enter username and password!");
+      }
+    }
+  </script>
+</body>
+</html>

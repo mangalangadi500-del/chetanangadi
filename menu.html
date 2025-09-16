@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSPT Canteen - Menu</title>
+  <style>
+    body { font-family: Arial; background:#fafafa; margin:0; }
+    header { background:#4CAF50; color:white; text-align:center; padding:20px; }
+    h2 { margin-top:20px; color:#4CAF50; text-align:center; }
+    .items { display:flex; flex-wrap:wrap; justify-content:center; margin:20px; }
+    .item { background:white; width:200px; margin:10px; border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.2); text-align:center; overflow:hidden; transition:0.3s; }
+    .item:hover { transform:scale(1.05); }
+    .item img { width:100%; height:140px; object-fit:cover; }
+    .item h3 { margin:10px 0; font-size:15px; }
+    .item p { margin:5px; color:#444; }
+    .item button { background:#4CAF50; color:white; border:none; padding:8px 12px;
+      margin:10px; border-radius:6px; cursor:pointer; }
+    .cart-btn { position:fixed; bottom:20px; right:20px; background:#4CAF50;
+                color:white; border:none; padding:15px 20px; border-radius:50%;
+                font-size:20px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SSPT Canteen 🍴</h1>
+    <p id="welcome"></p>
+  </header>
+
+  <h2>Snacks</h2>
+  <div class="items">
+    <div class="item"><img src="images/panipuri.jpg"><h3>Pani Puri</h3><p>₹30</p><button onclick="addToCart('Pani Puri',30)">Add</button></div>
+    <div class="item"><img src="images/masalpuri.jpg"><h3>Masala Puri</h3><p>₹35</p><button onclick="addToCart('Masala Puri',35)">Add</button></div>
+    <div class="item"><img src="images/gobi.jpg"><h3>Gobi Manchurian</h3><p>₹60</p><button onclick="addToCart('Gobi Manchurian',60)">Add</button></div>
+  </div>
+
+  <h2>Tiffin</h2>
+  <div class="items">
+    <div class="item"><img src="images/dosa.jpg"><h3>Dosa</h3><p>₹40</p><button onclick="addToCart('Dosa',40)">Add</button></div>
+    <div class="item"><img src="images/idli.jpg"><h3>Idli Vada</h3><p>₹30</p><button onclick="addToCart('Idli Vada',30)">Add</button></div>
+    <div class="item"><img src="images/rice.jpg"><h3>Rice Sambar</h3><p>₹50</p><button onclick="addToCart('Rice Sambar',50)">Add</button></div>
+  </div>
+
+  <h2>Drinks & Desserts</h2>
+  <div class="items">
+    <div class="item"><img src="images/icecream.jpg"><h3>Ice Cream</h3><p>₹40</p><button onclick="addToCart('Ice Cream',40)">Add</button></div>
+    <div class="item"><img src="images/juice.jpg"><h3>Juice</h3><p>₹25</p><button onclick="addToCart('Juice',25)">Add</button></div>
+    <div class="item"><img src="images/cake.jpg"><h3>Cake</h3><p>₹60</p><button onclick="addToCart('Cake',60)">Add</button></div>
+  </div>
+
+  <button class="cart-btn" onclick="window.location.href='orders.html'">🛒</button>
+
+  <script>
+    let user=localStorage.getItem("canteenUser")||"Guest";
+    document.getElementById("welcome").innerText="Welcome, "+user+"!";
+
+    function addToCart(item,price){
+      let cart=JSON.parse(localStorage.getItem("canteenCart"))||[];
+      cart.push({user:user,name:item,price:price});
+      localStorage.setItem("canteenCart",JSON.stringify(cart));
+      alert("✅ "+item+" added!");
+    }
+  </script>
+</body>
+</html>

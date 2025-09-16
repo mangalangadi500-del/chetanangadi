@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canteen Orders</title>
+  <style>
+    body { font-family: Arial; background:#f9f9f9; padding:20px; }
+    h1 { text-align:center; color:#4CAF50; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th,td { border:1px solid #ddd; padding:10px; text-align:center; }
+    th { background:#4CAF50; color:white; }
+    tr:nth-child(even) { background:#f2f2f2; }
+    .total { margin-top:20px; font-size:20px; text-align:right; color:#333; }
+    .btn { display:inline-block; margin-top:20px; padding:10px 15px; background:#333; color:white; border-radius:5px; text-decoration:none; }
+    .clear { background:#e53935; }
+  </style>
+</head>
+<body>
+  <h1>📦 SSPT Canteen Orders</h1>
+
+  <table>
+    <thead><tr><th>User</th><th>Item</th><th>Price</th></tr></thead>
+    <tbody id="orderList"></tbody>
+  </table>
+
+  <div class="total" id="totalPrice"></div>
+
+  <a class="btn" href="menu.html">← Back to Menu</a>
+  <button class="btn clear" onclick="clearOrders()">Clear Orders</button>
+
+  <script>
+    let cart=JSON.parse(localStorage.getItem("canteenCart"))||[];
+    let tbody=document.getElementById("orderList");
+    let total=0;
+
+    cart.forEach(c=>{
+      let tr=document.createElement("tr");
+      tr.innerHTML=`<td>${c.user}</td><td>${c.name}</td><td>₹${c.price}</td>`;
+      tbody.appendChild(tr);
+      total+=c.price;
+    });
+
+    document.getElementById("totalPrice").innerText="Total: ₹"+total;
+
+    function clearOrders(){
+      if(confirm("⚠️ Clear all orders?")){
+        localStorage.removeItem("canteenCart");
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>
