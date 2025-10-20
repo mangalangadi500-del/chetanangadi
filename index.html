@@ -1,131 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Recommendation Chatbot</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .chat-container {
-      width: 400px;
-      max-width: 90%;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .chat-header {
-      background: #2b6cb0;
-      color: white;
-      padding: 15px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .chat-box {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      font-size: 14px;
-    }
-    .message {
-      margin: 8px 0;
-      padding: 8px 12px;
-      border-radius: 8px;
-      max-width: 80%;
-      word-wrap: break-word;
-    }
-    .bot {
-      background: #e6f0ff;
-      align-self: flex-start;
-    }
-    .user {
-      background: #2b6cb0;
-      color: white;
-      align-self: flex-end;
-    }
-    .chat-input {
-      display: flex;
-      border-top: 1px solid #ddd;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      outline: none;
-    }
-    .chat-input button {
-      background: #2b6cb0;
-      color: white;
-      border: none;
-      padding: 0 20px;
-      cursor: pointer;
-    }
-    .chat-input button:hover {
-      background: #1e4e8c;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hostel Room Management System</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #83a4d4, #b6fbff);
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: #004d99;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .container {
+    max-width: 1000px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+  }
+  h2 {
+    color: #004d99;
+  }
+  input, select, button {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  button {
+    background: #004d99;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0073e6;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+  }
+  th {
+    background-color: #004d99;
+    color: white;
+  }
+  .room-section {
+    margin-bottom: 30px;
+  }
+  .print-btn {
+    background-color: #009933;
+  }
+</style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">Student Recommendation Chatbot</div>
-    <div class="chat-box" id="chat-box"></div>
-    <div class="chat-input">
-      <input type="text" id="user-input" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
 
-  <script>
-    const chatBox = document.getElementById("chat-box");
-    const input = document.getElementById("user-input");
+<header>🏠 Hostel Room Management System</header>
 
-    // Simple knowledge base
-    const responses = {
-      "hello": "Hi! I'm your Student Recommendation Bot. Tell me about your interests or strengths.",
-      "science": "Great! You may enjoy careers in Engineering, Medicine, or Research.",
-      "math": "Nice choice! You could explore Data Science, Engineering, or Actuarial Science.",
-      "arts": "Wonderful! You might like careers in Design, Literature, or Media.",
-      "commerce": "Good option! You can pursue Finance, Business, or Economics.",
-      "sports": "Awesome! You can consider Sports Science, Physical Education, or Coaching.",
-      "computer": "Excellent! You might explore Computer Science, Software Development, or AI.",
-      "bye": "Goodbye! Best wishes for your future."
-    };
+<div class="container">
+  <h2>Add Student</h2>
+  <input type="text" id="studentName" placeholder="Student Name">
+  <input type="text" id="roomNo" placeholder="Room Number">
+  <input type="text" id="semester" placeholder="Semester">
+  <input type="text" id="year" placeholder="Year">
+  <input type="text" id="parentPhone" placeholder="Parent Phone Number">
+  <button onclick="addStudent()">Add Student</button>
 
-    function addMessage(text, sender) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender);
-      msg.textContent = text;
-      chatBox.appendChild(msg);
-      chatBox.scrollTop = chatBox.scrollHeight;
+  <h2>View Students (Room-wise)</h2>
+  <button onclick="viewStudents()">View Students</button>
+  <button class="print-btn" onclick="printList()">Print List</button>
+
+  <div id="studentList"></div>
+</div>
+
+<script>
+  let students = JSON.parse(localStorage.getItem('hostelStudents')) || [];
+
+  function addStudent() {
+    const name = document.getElementById('studentName').value.trim();
+    const room = document.getElementById('roomNo').value.trim();
+    const sem = document.getElementById('semester').value.trim();
+    const year = document.getElementById('year').value.trim();
+    const phone = document.getElementById('parentPhone').value.trim();
+
+    if (!name || !room || !sem || !year || !phone) {
+      alert("Please fill all details!");
+      return;
     }
 
-    function sendMessage() {
-      const userText = input.value.trim();
-      if (!userText) return;
-      addMessage(userText, "user");
-      input.value = "";
+    students.push({ name, room, sem, year, phone });
+    localStorage.setItem('hostelStudents', JSON.stringify(students));
+    alert("Student added successfully!");
+    document.querySelectorAll("input").forEach(i => i.value = "");
+  }
 
-      // Simple matching
-      let reply = "Sorry, I didn’t understand. Can you tell me your interest (e.g., science, math, arts, commerce, computer, sports)?";
-      for (let key in responses) {
-        if (userText.toLowerCase().includes(key)) {
-          reply = responses[key];
-          break;
-        }
-      }
-      setTimeout(() => addMessage(reply, "bot"), 500);
+  function viewStudents() {
+    const listDiv = document.getElementById('studentList');
+    listDiv.innerHTML = "";
+
+    if (students.length === 0) {
+      listDiv.innerHTML = "<p>No students added yet.</p>";
+      return;
     }
-  </script>
+
+    const rooms = {};
+    students.forEach(s => {
+      if (!rooms[s.room]) rooms[s.room] = [];
+      rooms[s.room].push(s);
+    });
+
+    for (let room in rooms) {
+      const section = document.createElement('div');
+      section.className = 'room-section';
+      section.innerHTML = `<h3>Room No: ${room}</h3>`;
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <tr>
+          <th>Name</th>
+          <th>Semester</th>
+          <th>Year</th>
+          <th>Parent Phone</th>
+          <th>Action</th>
+        </tr>
+      `;
+      rooms[room].forEach((s, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${s.name}</td>
+          <td>${s.sem}</td>
+          <td>${s.year}</td>
+          <td>${s.phone}</td>
+          <td><button onclick="deleteStudent('${s.name}', '${s.room}')">Delete</button></td>
+        `;
+        table.appendChild(row);
+      });
+      section.appendChild(table);
+      listDiv.appendChild(section);
+    }
+  }
+
+  function deleteStudent(name, room) {
+    if (confirm(`Delete ${name} from Room ${room}?`)) {
+      students = students.filter(s => !(s.name === name && s.room === room));
+      localStorage.setItem('hostelStudents', JSON.stringify(students));
+      viewStudents();
+    }
+  }
+
+  function printList() {
+    const printWindow = window.open('', '', 'width=800,height=900');
+    printWindow.document.write(`
+      <html>
+      <head>
+      <title>Hostel Student List</title>
+      <style>
+        body { font-family: Arial; padding: 20px; }
+        h2, h3 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+        th { background: #eee; }
+      </style>
+      </head>
+      <body>
+      <h2>🏠 Hostel Students List</h2>
+    `);
+    const rooms = {};
+    students.forEach(s => {
+      if (!rooms[s.room]) rooms[s.room] = [];
+      rooms[s.room].push(s);
+    });
+
+    for (let room in rooms) {
+      printWindow.document.write(`<h3>Room No: ${room}</h3>`);
+      printWindow.document.write(`<table>
+        <tr><th>Name</th><th>Semester</th><th>Year</th><th>Parent Phone</th></tr>
+      `);
+      rooms[room].forEach(s => {
+        printWindow.document.write(`<tr>
+          <td>${s.name}</td><td>${s.sem}</td><td>${s.year}</td><td>${s.phone}</td>
+        </tr>`);
+      });
+      printWindow.document.write(`</table><br>`);
+    }
+    printWindow.document.write(`</body></html>`);
+    printWindow.document.close();
+    printWindow.print();
+  }
+</script>
+
 </body>
 </html>
