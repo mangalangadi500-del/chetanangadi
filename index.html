@@ -3,202 +3,229 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hostel Room Management System</title>
+<title>Student Profile Manager</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #83a4d4, #b6fbff);
-    margin: 0;
-    padding: 0;
-  }
-  header {
-    background: #004d99;
-    color: white;
-    text-align: center;
-    padding: 15px 0;
-    font-size: 24px;
-    font-weight: bold;
-  }
-  .container {
-    max-width: 1000px;
-    margin: 20px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
-  }
-  h2 {
-    color: #004d99;
-  }
-  input, select, button {
-    padding: 8px;
-    margin: 5px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  button {
-    background: #004d99;
-    color: white;
-    cursor: pointer;
-  }
-  button:hover {
-    background: #0073e6;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-  }
-  th {
-    background-color: #004d99;
-    color: white;
-  }
-  .room-section {
-    margin-bottom: 30px;
-  }
-  .print-btn {
-    background-color: #009933;
-  }
+body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 20px; }
+.container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+h1 { text-align: center; }
+nav { text-align:center; margin-bottom: 15px; }
+nav button { margin: 5px; padding: 8px 15px; border: none; background: #4CAF50; color: white; border-radius: 5px; cursor: pointer; }
+nav button:hover { background: #45a049; }
+input, select, button { padding: 8px; margin: 5px 0; width: 100%; }
+table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+th { background: #4CAF50; color: white; }
+.delete-btn { background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+.delete-btn:hover { background: darkred; }
+.hidden { display: none; }
+.print-btn { background: #2196F3; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+.print-btn:hover { background: #1976D2; }
 </style>
 </head>
 <body>
 
-<header>🏠 Hostel Room Management System</header>
-
 <div class="container">
+<h1>Student Profile Manager</h1>
+
+<nav>
+  <button onclick="showSection('addSection')">Add Student</button>
+  <button onclick="showSection('viewSection')">View Students</button>
+  <button onclick="showSection('filterSection')">View Branch Wise</button>
+</nav>
+
+<!-- Add Student Section -->
+<div id="addSection" class="section">
   <h2>Add Student</h2>
-  <input type="text" id="studentName" placeholder="Student Name">
-  <input type="text" id="roomNo" placeholder="Room Number">
-  <input type="text" id="semester" placeholder="Semester">
-  <input type="text" id="year" placeholder="Year">
-  <input type="text" id="parentPhone" placeholder="Parent Phone Number">
+  <input type="text" id="name" placeholder="Name">
+  <input type="number" id="age" placeholder="Age">
+  <input type="email" id="email" placeholder="Email">
+  <input type="text" id="phone" placeholder="Phone">
+  
+  <select id="branch">
+    <option value="">Select Branch</option>
+    <option>Computer Science</option>
+    <option>Civil</option>
+    <option>Mechanical</option>
+    <option>E&E</option>
+    <option>EEE</option>
+  </select>
+  
+  <select id="year">
+    <option value="">Select Year</option>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+  </select>
+  
+  <select id="sem">
+    <option value="">Select Semester</option>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>6</option>
+  </select>
+  
   <button onclick="addStudent()">Add Student</button>
+</div>
 
-  <h2>View Students (Room-wise)</h2>
-  <button onclick="viewStudents()">View Students</button>
-  <button class="print-btn" onclick="printList()">Print List</button>
+<!-- View Students Section -->
+<div id="viewSection" class="section hidden">
+  <h2>All Students</h2>
+  <button class="print-btn" onclick="printTable()">Print Students</button>
+  <table id="studentTable">
+    <thead>
+      <tr>
+        <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
+        <th>Branch</th><th>Year</th><th>Sem</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="studentList"></tbody>
+  </table>
+</div>
 
-  <div id="studentList"></div>
+<!-- View Students Branch Wise Section -->
+<div id="filterSection" class="section hidden">
+  <h2>View Students Branch Wise</h2>
+  <select id="branchFilter">
+    <option value="">Select Branch</option>
+    <option>Computer Science</option>
+    <option>Civil</option>
+    <option>Mechanical</option>
+    <option>E&E</option>
+    <option>EEE</option>
+  </select>
+  <select id="yearFilter">
+    <option value="">Select Year</option>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+  </select>
+  <select id="semFilter">
+    <option value="">Select Semester</option>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>6</option>
+  </select>
+  <button onclick="filterStudents()">Filter</button>
+  <button class="print-btn" onclick="printFiltered()">Print Branch Wise</button>
+  
+  <table id="filterTable">
+    <thead>
+      <tr>
+        <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
+        <th>Branch</th><th>Year</th><th>Sem</th>
+      </tr>
+    </thead>
+    <tbody id="filterList"></tbody>
+  </table>
+</div>
 </div>
 
 <script>
-  let students = JSON.parse(localStorage.getItem('hostelStudents')) || [];
+function showSection(sectionId) {
+  document.querySelectorAll('.section').forEach(sec => sec.classList.add("hidden"));
+  document.getElementById(sectionId).classList.remove("hidden");
+  if (sectionId === 'viewSection') loadStudents();
+}
 
-  function addStudent() {
-    const name = document.getElementById('studentName').value.trim();
-    const room = document.getElementById('roomNo').value.trim();
-    const sem = document.getElementById('semester').value.trim();
-    const year = document.getElementById('year').value.trim();
-    const phone = document.getElementById('parentPhone').value.trim();
-
-    if (!name || !room || !sem || !year || !phone) {
-      alert("Please fill all details!");
-      return;
-    }
-
-    students.push({ name, room, sem, year, phone });
-    localStorage.setItem('hostelStudents', JSON.stringify(students));
-    alert("Student added successfully!");
-    document.querySelectorAll("input").forEach(i => i.value = "");
+function addStudent() {
+  let student = {
+    id: Date.now(),
+    name: document.getElementById("name").value.trim(),
+    age: document.getElementById("age").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    branch: document.getElementById("branch").value,
+    year: document.getElementById("year").value,
+    sem: document.getElementById("sem").value
+  };
+  if (!student.name || !student.age || !student.email || !student.phone || !student.branch || !student.year || !student.sem) {
+    alert("Please fill all fields");
+    return;
   }
+  let students = JSON.parse(localStorage.getItem("students")) || [];
+  students.push(student);
+  localStorage.setItem("students", JSON.stringify(students));
+  alert("Student Added Successfully!");
+  document.querySelectorAll("#addSection input, #addSection select").forEach(el => el.value = "");
+}
 
-  function viewStudents() {
-    const listDiv = document.getElementById('studentList');
-    listDiv.innerHTML = "";
+function loadStudents() {
+  let students = JSON.parse(localStorage.getItem("students")) || [];
+  let table = document.getElementById("studentList");
+  table.innerHTML = "";
+  students.forEach(s => {
+    table.innerHTML += `<tr>
+      <td>${s.name}</td>
+      <td>${s.age}</td>
+      <td>${s.email}</td>
+      <td>${s.phone}</td>
+      <td>${s.branch}</td>
+      <td>${s.year}</td>
+      <td>${s.sem}</td>
+      <td><button class="delete-btn" onclick="deleteStudent(${s.id})">Delete</button></td>
+    </tr>`;
+  });
+}
 
-    if (students.length === 0) {
-      listDiv.innerHTML = "<p>No students added yet.</p>";
-      return;
-    }
+function deleteStudent(id) {
+  let students = JSON.parse(localStorage.getItem("students")) || [];
+  students = students.filter(s => s.id !== id);
+  localStorage.setItem("students", JSON.stringify(students));
+  loadStudents();
+}
 
-    const rooms = {};
-    students.forEach(s => {
-      if (!rooms[s.room]) rooms[s.room] = [];
-      rooms[s.room].push(s);
-    });
+function filterStudents() {
+  let branch = document.getElementById("branchFilter").value;
+  let year = document.getElementById("yearFilter").value;
+  let sem = document.getElementById("semFilter").value;
+  
+  let students = JSON.parse(localStorage.getItem("students")) || [];
+  let filtered = students.filter(s => 
+    (branch ? s.branch === branch : true) &&
+    (year ? s.year === year : true) &&
+    (sem ? s.sem === sem : true)
+  );
+  
+  let table = document.getElementById("filterList");
+  table.innerHTML = "";
+  filtered.forEach(s => {
+    table.innerHTML += `<tr>
+      <td>${s.name}</td>
+      <td>${s.age}</td>
+      <td>${s.email}</td>
+      <td>${s.phone}</td>
+      <td>${s.branch}</td>
+      <td>${s.year}</td>
+      <td>${s.sem}</td>
+    </tr>`;
+  });
+}
 
-    for (let room in rooms) {
-      const section = document.createElement('div');
-      section.className = 'room-section';
-      section.innerHTML = `<h3>Room No: ${room}</h3>`;
-      const table = document.createElement('table');
-      table.innerHTML = `
-        <tr>
-          <th>Name</th>
-          <th>Semester</th>
-          <th>Year</th>
-          <th>Parent Phone</th>
-          <th>Action</th>
-        </tr>
-      `;
-      rooms[room].forEach((s, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${s.name}</td>
-          <td>${s.sem}</td>
-          <td>${s.year}</td>
-          <td>${s.phone}</td>
-          <td><button onclick="deleteStudent('${s.name}', '${s.room}')">Delete</button></td>
-        `;
-        table.appendChild(row);
-      });
-      section.appendChild(table);
-      listDiv.appendChild(section);
-    }
-  }
+function printTable() {
+  let divToPrint = document.getElementById("studentTable");
+  let newWin = window.open("");
+  newWin.document.write("<html><head><title>Print</title></head><body>");
+  newWin.document.write(divToPrint.outerHTML);
+  newWin.document.write("</body></html>");
+  newWin.print();
+  newWin.close();
+}
 
-  function deleteStudent(name, room) {
-    if (confirm(`Delete ${name} from Room ${room}?`)) {
-      students = students.filter(s => !(s.name === name && s.room === room));
-      localStorage.setItem('hostelStudents', JSON.stringify(students));
-      viewStudents();
-    }
-  }
-
-  function printList() {
-    const printWindow = window.open('', '', 'width=800,height=900');
-    printWindow.document.write(`
-      <html>
-      <head>
-      <title>Hostel Student List</title>
-      <style>
-        body { font-family: Arial; padding: 20px; }
-        h2, h3 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-        th { background: #eee; }
-      </style>
-      </head>
-      <body>
-      <h2>🏠 Hostel Students List</h2>
-    `);
-    const rooms = {};
-    students.forEach(s => {
-      if (!rooms[s.room]) rooms[s.room] = [];
-      rooms[s.room].push(s);
-    });
-
-    for (let room in rooms) {
-      printWindow.document.write(`<h3>Room No: ${room}</h3>`);
-      printWindow.document.write(`<table>
-        <tr><th>Name</th><th>Semester</th><th>Year</th><th>Parent Phone</th></tr>
-      `);
-      rooms[room].forEach(s => {
-        printWindow.document.write(`<tr>
-          <td>${s.name}</td><td>${s.sem}</td><td>${s.year}</td><td>${s.phone}</td>
-        </tr>`);
-      });
-      printWindow.document.write(`</table><br>`);
-    }
-    printWindow.document.write(`</body></html>`);
-    printWindow.document.close();
-    printWindow.print();
-  }
+function printFiltered() {
+  let divToPrint = document.getElementById("filterTable");
+  let newWin = window.open("");
+  newWin.document.write("<html><head><title>Print</title></head><body>");
+  newWin.document.write(divToPrint.outerHTML);
+  newWin.document.write("</body></html>");
+  newWin.print();
+  newWin.close();
+}
 </script>
 
 </body>
