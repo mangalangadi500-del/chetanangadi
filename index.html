@@ -20,6 +20,7 @@ th { background: #4CAF50; color: white; }
 .hidden { display: none; }
 .print-btn { background: #2196F3; color: white; border: none; padding: 5px 10px; cursor: pointer; }
 .print-btn:hover { background: #1976D2; }
+.fee-table { margin-top:20px; }
 </style>
 </head>
 <body>
@@ -31,6 +32,7 @@ th { background: #4CAF50; color: white; }
   <button onclick="showSection('addSection')">Add Student</button>
   <button onclick="showSection('viewSection')">View Students</button>
   <button onclick="showSection('filterSection')">View Branch Wise</button>
+  <button onclick="showSection('feeChartSection')">Year-wise Fees</button>
 </nav>
 
 <!-- Add Student Section -->
@@ -50,7 +52,7 @@ th { background: #4CAF50; color: white; }
     <option>EEE</option>
   </select>
   
-  <select id="year">
+  <select id="year" onchange="updateFee()">
     <option value="">Select Year</option>
     <option>1</option>
     <option>2</option>
@@ -66,7 +68,11 @@ th { background: #4CAF50; color: white; }
     <option>5</option>
     <option>6</option>
   </select>
-  
+
+  <input type="number" id="fee" placeholder="Yearly Fees (Auto-Filled)" readonly>
+  <input type="number" id="backFee" placeholder="Back Fees (if any)">
+  <input type="number" id="totalFee" placeholder="Total Fees (Auto-Calculated)" readonly>
+
   <button onclick="addStudent()">Add Student</button>
 </div>
 
@@ -78,14 +84,15 @@ th { background: #4CAF50; color: white; }
     <thead>
       <tr>
         <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
-        <th>Branch</th><th>Year</th><th>Sem</th><th>Action</th>
+        <th>Branch</th><th>Year</th><th>Sem</th>
+        <th>Fees (₹)</th><th>Back Fees (₹)</th><th>Total (₹)</th><th>Action</th>
       </tr>
     </thead>
     <tbody id="studentList"></tbody>
   </table>
 </div>
 
-<!-- View Students Branch Wise Section -->
+<!-- Filter by Branch -->
 <div id="filterSection" class="section hidden">
   <h2>View Students Branch Wise</h2>
   <select id="branchFilter">
@@ -119,19 +126,48 @@ th { background: #4CAF50; color: white; }
       <tr>
         <th>Name</th><th>Age</th><th>Email</th><th>Phone</th>
         <th>Branch</th><th>Year</th><th>Sem</th>
+        <th>Fees (₹)</th><th>Back Fees (₹)</th><th>Total (₹)</th>
       </tr>
     </thead>
     <tbody id="filterList"></tbody>
   </table>
 </div>
+
+<!-- Fee Chart Section -->
+<div id="feeChartSection" class="section hidden">
+  <h2>Year-Wise Fee Chart</h2>
+  <table class="fee-table">
+    <tr><th>Year</th><th>Fees (₹)</th></tr>
+    <tr><td>1st Year</td><td id="fee1"></td></tr>
+    <tr><td>2nd Year</td><td id="fee2"></td></tr>
+    <tr><td>3rd Year</td><td id="fee3"></td></tr>
+  </table>
+</div>
 </div>
 
 <script>
+const feeStructure = { "1": 25000, "2": 30000, "3": 35000 };
+
 function showSection(sectionId) {
   document.querySelectorAll('.section').forEach(sec => sec.classList.add("hidden"));
   document.getElementById(sectionId).classList.remove("hidden");
   if (sectionId === 'viewSection') loadStudents();
+  if (sectionId === 'feeChartSection') loadFeeChart();
 }
+
+function updateFee() {
+  const year = document.getElementById("year").value;
+  const fee = year ? feeStructure[year] : "";
+  document.getElementById("fee").value = fee;
+  calculateTotal();
+}
+
+function calculateTotal() {
+  const fee = Number(document.getElementById("fee").value) || 0;
+  const backFee = Number(document.getElementById("backFee").value) || 0;
+  document.getElementById("totalFee").value = fee + backFee;
+}
+document.getElementById("backFee").addEventListener("input", calculateTotal);
 
 function addStudent() {
   let student = {
@@ -142,12 +178,17 @@ function addStudent() {
     phone: document.getElementById("phone").value.trim(),
     branch: document.getElementById("branch").value,
     year: document.getElementById("year").value,
-    sem: document.getElementById("sem").value
+    sem: document.getElementById("sem").value,
+    fee: document.getElementById("fee").value,
+    backFee: document.getElementById("backFee").value || 0,
+    totalFee: document.getElementById("totalFee").value
   };
+
   if (!student.name || !student.age || !student.email || !student.phone || !student.branch || !student.year || !student.sem) {
     alert("Please fill all fields");
     return;
   }
+
   let students = JSON.parse(localStorage.getItem("students")) || [];
   students.push(student);
   localStorage.setItem("students", JSON.stringify(students));
@@ -168,6 +209,9 @@ function loadStudents() {
       <td>${s.branch}</td>
       <td>${s.year}</td>
       <td>${s.sem}</td>
+      <td>${s.fee}</td>
+      <td>${s.backFee}</td>
+      <td>${s.totalFee}</td>
       <td><button class="delete-btn" onclick="deleteStudent(${s.id})">Delete</button></td>
     </tr>`;
   });
@@ -203,6 +247,9 @@ function filterStudents() {
       <td>${s.branch}</td>
       <td>${s.year}</td>
       <td>${s.sem}</td>
+      <td>${s.fee}</td>
+      <td>${s.backFee}</td>
+      <td>${s.totalFee}</td>
     </tr>`;
   });
 }
@@ -225,6 +272,12 @@ function printFiltered() {
   newWin.document.write("</body></html>");
   newWin.print();
   newWin.close();
+}
+
+function loadFeeChart() {
+  document.getElementById("fee1").innerText = feeStructure["1"];
+  document.getElementById("fee2").innerText = feeStructure["2"];
+  document.getElementById("fee3").innerText = feeStructure["3"];
 }
 </script>
 
